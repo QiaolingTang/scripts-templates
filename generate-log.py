@@ -12,7 +12,8 @@ logger.setLevel(logging.DEBUG)
 handler1.setLevel(logging.DEBUG)
 #handler2.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+#formatter = logging.Formatter("time=%(asctime)s level=%(levelname)s msg=%(message)s")
+formatter = logging.Formatter("%(message)s")
 handler1.setFormatter(formatter)
 #handler2.setFormatter(formatter)
 
@@ -30,4 +31,3 @@ if __name__ == "__main__":
     while True:
         logger.debug(logs)
         time.sleep(2)
-    

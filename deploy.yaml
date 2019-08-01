@@ -15,7 +15,7 @@ spec:
     metadata:
       annotations:
         capabilities: Seamless Upgrades
-        containerImage: docker.io/qiaolingtang/generate-log:v1.0.1
+        containerImage: docker.io/qiaolingtang/generate-log:latest
         support: Qiaoling Tang
       creationTimestamp: null
       labels:
@@ -26,7 +26,7 @@ spec:
         - /run.sh
         command:
         - /bin/sh
-        image: docker.io/qiaolingtang/generate-log:v1.0.1
+        image: docker.io/qiaolingtang/generate-log:latest
         imagePullPolicy: IfNotPresent
         name: log4j2
         resources: {}
@@ -37,4 +37,3 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
-status:
