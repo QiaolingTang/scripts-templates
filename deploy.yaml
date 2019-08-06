@@ -15,7 +15,7 @@ spec:
     metadata:
       annotations:
         capabilities: Seamless Upgrades
-        containerImage: docker.io/qiaolingtang/generate-log:latest
+        containerImage: quay.io/qiaolingtang/generate-log:latest
         support: Qiaoling Tang
       creationTimestamp: null
       labels:
@@ -26,14 +26,22 @@ spec:
         - /run.sh
         command:
         - /bin/sh
-        image: docker.io/qiaolingtang/generate-log:latest
+        image: quay.io/qiaolingtang/generate-log:latest
         imagePullPolicy: IfNotPresent
         name: log4j2
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/generate-log
+          name: config
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: generate-log
+        name: config
