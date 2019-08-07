@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python ./generate-log.py
+python3 ./generate-log.py

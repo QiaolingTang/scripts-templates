@@ -1,7 +1,6 @@
-FROM centos:7
+FROM fedora:latest
 
 RUN mkdir -p /etc/generate-log
-COPY generate-log.py run.sh log.json /
+COPY generate-log.py run.sh /
 RUN chmod +x /run.sh
-
 WORKDIR /
