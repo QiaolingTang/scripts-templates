@@ -26,9 +26,16 @@ f = open(logfile, "r")
 if f.mode == "r":
     logs = f.read()
 
+c = open('/etc/generate-log/count')
+if c.mode == "r":
+    count = c.read()
+
+#count = 600
+
 #logs = '{"message": "MERGE_JSON_LOG=true", "testcase": "logging-test", "level": "info"," Layer1": "layer1 0", "layer2": {"name":"Layer2 1", "tips":"decide by PRESERVE_JSON_LOG"}, "StringNumber":"10", "Number": 10,"foo.bar":"dotstring","{foobar}":"bracestring","[foobar]":"bracket string", "foo:bar":"colonstring", "empty1":"", "empty2":{}}'
 if __name__ == "__main__":
-    i = 0
+    t = 60/count
+    print(t)
     while True:
         logger.info("{\"time\": \"%s\", \"logs\": "+logs+"}", datetime.utcnow())
-        time.sleep(0.5)
+        time.sleep(t)
