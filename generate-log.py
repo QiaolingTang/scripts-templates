@@ -21,7 +21,6 @@ handler1.setFormatter(formatter)
 logger.addHandler(handler1)
 #logger.addHandler(handler2)
 
-
 logfile = '/etc/generate-log/json.example'
 f = open(logfile, "r")
 if f.mode == "r":
@@ -31,5 +30,5 @@ if f.mode == "r":
 if __name__ == "__main__":
     i = 0
     while True:
-        logger.info("{\"time\": \"%s\", "+logs+"}", datetime.utcnow())
+        logger.info("{\"time\": \"%s\", \"logs\": "+logs+"}", datetime.utcnow())
         time.sleep(0.5)
