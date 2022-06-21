@@ -34,7 +34,7 @@ if c.mode == "r":
 
 #logs = '{"message": "MERGE_JSON_LOG=true", "testcase": "logging-test", "level": "info"," Layer1": "layer1 0", "layer2": {"name":"Layer2 1", "tips":"decide by PRESERVE_JSON_LOG"}, "StringNumber":"10", "Number": 10,"foo.bar":"dotstring","{foobar}":"bracestring","[foobar]":"bracket string", "foo:bar":"colonstring", "empty1":"", "empty2":{}}'
 if __name__ == "__main__":
-    t = 60/count
+    t = 60/int(count)
     print(t)
     while True:
         logger.info("{\"time\": \"%s\", \"logs\": "+logs+"}", datetime.utcnow())
