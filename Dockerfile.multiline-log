@@ -1,0 +1,5 @@
+FROM registry.redhat.io/ubi8/go-toolset:1.18.9 AS builder
+
+COPY multiline-log.go run-go.sh /
+RUN go build /multiline-log.go
+WORKDIR /
