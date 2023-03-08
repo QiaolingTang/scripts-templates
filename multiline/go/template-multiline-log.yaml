@@ -58,9 +58,11 @@ objects:
           name: config
 - apiVersion: v1
   data:
-    multiline-log.go: "package main\n\nimport \"fmt\"\n\nfunc main() {\n\t//var test
-      []string\n\n\t//fmt.Printf(\"the first string is: %s\", test[0])\n\n\tnewLog :=
-      `this is the first line\n\tthis is the second line\n\tthis is the third line\n\t`\n\n\tfmt.Println(newLog)\n}\n"
+      multiline-log.go: "package main\n\nimport (\n\t\"fmt\"\n\t\"os\"\n\t\"time\"\n)\n\nfunc
+        main() {\n\t//var test []string\n\n\t//fmt.Printf(\"the first string is: %s\",
+        test[0])\n\n\tnewLog := `this is the first line\n\tthis is the second line\n\tthis
+        is the third line\n\t`\n\tfor true {\n\t\tfmt.Fprint(os.Stderr, time.Now(), newLog)\n\t\ttime.Sleep(10
+        * time.Second)\n\t}\n\n}\n"
   kind: ConfigMap
   metadata:
     name: multiline-log
