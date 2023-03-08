@@ -42,9 +42,25 @@ objects:
           resources: {}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /multiline-log.go
+            subPath: multiline-log.go
+            name: config
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
         securityContext: {}
         terminationGracePeriodSeconds: 30
-
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: multiline-log
+          name: config
+- apiVersion: v1
+  data:
+    multiline-log.go: "package main\n\nimport \"fmt\"\n\nfunc main() {\n\t//var test
+      []string\n\n\t//fmt.Printf(\"the first string is: %s\", test[0])\n\n\tnewLog :=
+      `this is the first line\n\tthis is the second line\n\tthis is the third line\n\t`\n\n\tfmt.Println(newLog)\n}\n"
+  kind: ConfigMap
+  metadata:
+    name: multiline-log
