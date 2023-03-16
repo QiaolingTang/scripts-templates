@@ -420,15 +420,28 @@ def init_logger():
 
     return logger
 
+def delay(sleep_time):
+  # Avoid unnecessary calls to time.sleep()
+  if sleep_time > 0.0:
+    sleep_this_time = True;
+
+    if sleep_time < 0.1:
+      sleep_this_time = False
+
+    if sleep_this_time:
+      time.sleep(sleep_time)
+    return
+
 def generate_log(count, log_type):
     logger = init_logger()
 
-    t = 60/int(count)
+    sleep_time = 60.00/float(count)
 
     java_log = [JAVA_EXC, COMPLEX_JAVA_EXC, NESTED_JAVA_EXC]
     go_log = [GO_EXC, GO_ON_GAE_EXC, GO_SIGNAL_EXC, GO_HTTP]
     python_log = [PYTHON_EXC]
     php_log = [PHP_EXC, PHP_ON_GAE_EXC]
+    all = java_log + go_log + python_log + php_log
 
     logs = []
     if log_type == "java":
@@ -453,16 +466,18 @@ def generate_log(count, log_type):
         logs = python_log
     elif log_type == "php":
         logs = php_log
+    else:
+        logs = all
 
     while True:
         for log in logs:
             logger.info(log)
-            time.sleep(t)
+            delay(sleep_time)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('-c','--count', dest='count', type=int, default=30,
+    parser = argparse.ArgumentParser(description='variables for generating multiline logs')
+    parser.add_argument('-c','--count', dest='count', type=float, default=30.00,
                     help='number of logs to generate per minute, 0 is infinite - cannot be used with -c')
     parser.add_argument('-t', '--log-type',dest='log_type', type=str, default='java',
                     help='type of programming language used to generate multiline logs, such as java, go')

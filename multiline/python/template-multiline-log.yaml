@@ -25,7 +25,7 @@ objects:
       metadata:
         annotations:
           capabilities: Seamless Upgrades
-          containerImage: quay.io/qiaolingtang/multiline:python-v0.8
+          containerImage: quay.io/qiaolingtang/multiline:python-v0.9
           support: Qiaoling Tang
         creationTimestamp: null
         labels:
@@ -36,7 +36,7 @@ objects:
           - /run-python.sh
           command:
           - /bin/sh
-          image: quay.io/qiaolingtang/multiline:python-v0.8
+          image: quay.io/qiaolingtang/multiline:python-v0.9
           imagePullPolicy: IfNotPresent
           name: multiline-log
           resources: {}

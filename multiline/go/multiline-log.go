@@ -444,18 +444,32 @@ I am glad it contains no exception.
 `
 )
 
+func delay(sleepTime float64) {
+	if sleepTime > 0.0 {
+		sleepThisTime := true
+		if sleepTime < 0.1 {
+			sleepThisTime = false
+		}
+		if sleepThisTime {
+			time.Sleep(time.Duration(sleepTime) * time.Second)
+		}
+	}
+}
+
 // supported multilines stacktraces: https://github.com/GoogleCloudPlatform/fluent-plugin-detect-exceptions/blob/master/test/plugin/test_exception_detector.rb
 func main() {
 	newLogs := []string{}
+	javaLogs := []string{JAVA_EXC, COMPLEX_JAVA_EXC, NESTED_JAVA_EXC}
+	goLogs := []string{GO_EXC, GO_ON_GAE_EXC, GO_SIGNAL_EXC, GO_HTTP}
 
 	logType := flag.String("log-type", "java", "type of programming language used to generate multiline logs, such as java, python")
-	count := flag.Int("count", 42, "number of logs to generate per minute, 0 is infinite - cannot be used with -t")
+	count := flag.Float64("count", 30.00, "number of logs to generate per minute, 0 is infinite - cannot be used with -c")
 
 	flag.Parse()
 	switch *logType {
 	case "go":
 		{
-			newLogs = append(newLogs, GO_EXC, GO_ON_GAE_EXC, GO_SIGNAL_EXC, GO_HTTP)
+			newLogs = goLogs
 		}
 	case "go_exc":
 		{
@@ -475,7 +489,7 @@ func main() {
 		}
 	case "java":
 		{
-			newLogs = append(newLogs, JAVA_EXC, COMPLEX_JAVA_EXC, NESTED_JAVA_EXC)
+			newLogs = javaLogs
 		}
 	case "java_exc":
 		{
@@ -497,13 +511,19 @@ func main() {
 		{
 			newLogs = append(newLogs, PYTHON_EXC)
 		}
+	default:
+		{
+			newLogs = append(newLogs, PYTHON_EXC, PHP_EXC, PHP_ON_GAE_EXC)
+			newLogs = append(newLogs, javaLogs...)
+			newLogs = append(newLogs, goLogs...)
+		}
 	}
-	sleepTime := 60 / *count
+	sleepTime := 60.00 / *count
 
 	for true {
 		for _, log := range newLogs {
 			fmt.Fprint(os.Stderr, log)
-			time.Sleep(time.Duration(sleepTime) * time.Second)
+			delay(sleepTime)
 		}
 	}
 }
