@@ -1,4 +1,0 @@
-FROM fedora:latest
-
-COPY multiline-log.py run-python.sh /
-WORKDIR /

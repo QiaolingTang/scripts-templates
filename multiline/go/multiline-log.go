@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"time"
@@ -12,7 +13,8 @@ const (
   at java.lang.Thing.call(Thing.java:10)
   at com.my.app.Object.help(MakeLog.java:40)
   at sun.javax.API.method(API.java:100)
-  at com.jetty.Framework.main(MakeLog.java:30)`
+  at com.jetty.Framework.main(MakeLog.java:30)
+`
 
 	COMPLEX_JAVA_EXC = `javax.servlet.ServletException: Something bad happened
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:60)
@@ -42,11 +44,13 @@ Caused by: com.example.myproject.MyProjectServletException
     at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:511)
     at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1166)
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:30)
-    ... 27 common frames omitted`
+    ... 27 common frames omitted
+`
 
 	NESTED_JAVA_EXC = `java.lang.RuntimeException: javax.mail.SendFailedException: Invalid Addresses;
   nested exception is:
 com.sun.mail.smtp.SMTPAddressFailedException: 550 5.7.1 <[REDACTED_EMAIL_ADDRESS]>... Relaying denied
+
 	at com.nethunt.crm.api.server.adminsync.AutomaticEmailFacade.sendWithSmtp(AutomaticEmailFacade.java:236)
 	at com.nethunt.crm.api.server.adminsync.AutomaticEmailFacade.sendSingleEmail(AutomaticEmailFacade.java:285)
 	at com.nethunt.crm.api.server.adminsync.AutomaticEmailFacade.lambda$sendSingleEmail$3(AutomaticEmailFacade.java:254)
@@ -62,11 +66,13 @@ com.sun.mail.smtp.SMTPAddressFailedException: 550 5.7.1 <[REDACTED_EMAIL_ADDRESS
 Caused by: javax.mail.SendFailedException: Invalid Addresses;
   nested exception is:
 com.sun.mail.smtp.SMTPAddressFailedException: 550 5.7.1 <[REDACTED_EMAIL_ADDRESS]>... Relaying denied
+
 	at com.sun.mail.smtp.SMTPTransport.rcptTo(SMTPTransport.java:2064)
 	at com.sun.mail.smtp.SMTPTransport.sendMessage(SMTPTransport.java:1286)
 	at com.nethunt.crm.api.server.adminsync.AutomaticEmailFacade.sendWithSmtp(AutomaticEmailFacade.java:229)
 	... 12 more
-Caused by: com.sun.mail.smtp.SMTPAddressFailedException: 550 5.7.1 <[REDACTED_EMAIL_ADDRESS]>... Relaying denied`
+Caused by: com.sun.mail.smtp.SMTPAddressFailedException: 550 5.7.1 <[REDACTED_EMAIL_ADDRESS]>... Relaying denied
+`
 
 	NODE_JS_EXC = `ReferenceError: myArray is not defined
   at next (/app/node_modules/express/lib/router/index.js:256:14)
@@ -78,16 +84,18 @@ Caused by: com.sun.mail.smtp.SMTPAddressFailedException: 550 5.7.1 <[REDACTED_EM
   at Route.dispatch (/app/node_modules/express/lib/router/route.js:112:3)
   at next (/app/node_modules/express/lib/router/route.js:131:13)
   at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)
-  at /app/app.js:52:3`
+  at /app/app.js:52:3
+`
 
 	PYTHON_EXC = `Traceback (most recent call last):
-	File "/base/data/home/runtimes/python27/python27_lib/versions/third_party/webapp2-2.5.2/webapp2.py", line 1535, in __call__
-	  rv = self.handle_exception(request, response, e)
-	File "/base/data/home/apps/s~nearfieldspy/1.378705245900539993/nearfieldspy.py", line 17, in start
-	  return get()
-	File "/base/data/home/apps/s~nearfieldspy/1.378705245900539993/nearfieldspy.py", line 5, in get
-	  raise Exception('spam', 'eggs')
-  Exception: ('spam', 'eggs')`
+  File "/base/data/home/runtimes/python27/python27_lib/versions/third_party/webapp2-2.5.2/webapp2.py", line 1535, in __call__
+    rv = self.handle_exception(request, response, e)
+  File "/base/data/home/apps/s~nearfieldspy/1.378705245900539993/nearfieldspy.py", line 17, in start
+    return get()
+  File "/base/data/home/apps/s~nearfieldspy/1.378705245900539993/nearfieldspy.py", line 5, in get
+    raise Exception('spam', 'eggs')
+Exception: ('spam', 'eggs')
+`
 
 	PHP_EXC = `exception 'Exception' with message 'Custom exception' in /home/joe/work/test-php/test.php:5
 Stack trace:
@@ -116,7 +124,48 @@ main.main.func1(0xc420024120)
 runtime.goexit()
 	/usr/local/go/src/runtime/asm_amd64.s:2337 +0x1 fp=0xc42003f7e0 sp=0xc42003f7d8 pc=0x44b4d1
 created by main.main
-	foo.go:5 +0x58`
+	foo.go:5 +0x58
+
+goroutine 1 [chan receive]:
+runtime.gopark(0x4739b8, 0xc420024178, 0x46fcd7, 0xc, 0xc420028e17, 0x3)
+	/usr/local/go/src/runtime/proc.go:280 +0x12c fp=0xc420053e30 sp=0xc420053e00 pc=0x42503c
+runtime.goparkunlock(0xc420024178, 0x46fcd7, 0xc, 0x1000f010040c217, 0x3)
+	/usr/local/go/src/runtime/proc.go:286 +0x5e fp=0xc420053e70 sp=0xc420053e30 pc=0x42512e
+runtime.chanrecv(0xc420024120, 0x0, 0xc420053f01, 0x4512d8)
+	/usr/local/go/src/runtime/chan.go:506 +0x304 fp=0xc420053f20 sp=0xc420053e70 pc=0x4046b4
+runtime.chanrecv1(0xc420024120, 0x0)
+	/usr/local/go/src/runtime/chan.go:388 +0x2b fp=0xc420053f50 sp=0xc420053f20 pc=0x40439b
+main.main()
+	foo.go:9 +0x6f fp=0xc420053f80 sp=0xc420053f50 pc=0x4512ef
+runtime.main()
+	/usr/local/go/src/runtime/proc.go:185 +0x20d fp=0xc420053fe0 sp=0xc420053f80 pc=0x424bad
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:2337 +0x1 fp=0xc420053fe8 sp=0xc420053fe0 pc=0x44b4d1
+
+goroutine 2 [force gc (idle)]:
+runtime.gopark(0x4739b8, 0x4ad720, 0x47001e, 0xf, 0x14, 0x1)
+	/usr/local/go/src/runtime/proc.go:280 +0x12c fp=0xc42003e768 sp=0xc42003e738 pc=0x42503c
+runtime.goparkunlock(0x4ad720, 0x47001e, 0xf, 0xc420000114, 0x1)
+	/usr/local/go/src/runtime/proc.go:286 +0x5e fp=0xc42003e7a8 sp=0xc42003e768 pc=0x42512e
+runtime.forcegchelper()
+	/usr/local/go/src/runtime/proc.go:238 +0xcc fp=0xc42003e7e0 sp=0xc42003e7a8 pc=0x424e5c
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:2337 +0x1 fp=0xc42003e7e8 sp=0xc42003e7e0 pc=0x44b4d1
+created by runtime.init.4
+	/usr/local/go/src/runtime/proc.go:227 +0x35
+
+goroutine 3 [GC sweep wait]:
+runtime.gopark(0x4739b8, 0x4ad7e0, 0x46fdd2, 0xd, 0x419914, 0x1)
+	/usr/local/go/src/runtime/proc.go:280 +0x12c fp=0xc42003ef60 sp=0xc42003ef30 pc=0x42503c
+runtime.goparkunlock(0x4ad7e0, 0x46fdd2, 0xd, 0x14, 0x1)
+	/usr/local/go/src/runtime/proc.go:286 +0x5e fp=0xc42003efa0 sp=0xc42003ef60 pc=0x42512e
+runtime.bgsweep(0xc42001e150)
+	/usr/local/go/src/runtime/mgcsweep.go:52 +0xa3 fp=0xc42003efd8 sp=0xc42003efa0 pc=0x419973
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:2337 +0x1 fp=0xc42003efe0 sp=0xc42003efd8 pc=0x44b4d1
+created by runtime.gcenable
+	/usr/local/go/src/runtime/mgc.go:216 +0x58
+`
 
 	GO_ON_GAE_EXC = `panic: runtime error: index out of range
 
@@ -136,21 +185,22 @@ appengine_internal.(*server).HandleRequest(0x15819b0, 0xc010401560, 0xc0104c8180
 reflect.Value.call(0x1243fe0, 0x15819b0, 0x113, 0x12c8a20, 0x4, 0xc010485f78, 0x3, 0x3, 0x0, 0x0, ...)
 	/tmp/appengine/go/src/reflect/value.go:419 +0x10fd
 reflect.Value.Call(0x1243fe0, 0x15819b0, 0x113, 0xc010485f78, 0x3, 0x3, 0x0, 0x0, 0x0)
-	/tmp/ap`
+	/tmp/ap
+`
 
 	GO_SIGNAL_EXC = `panic: runtime error: invalid memory address or nil pointer dereference
-
 [signal SIGSEGV: segmentation violation code=0x1 addr=0x0 pc=0x7fd34f]
+
 goroutine 5 [running]:
 panics.nilPtrDereference()
 	panics/panics.go:33 +0x1f
 panics.Wait()
 	panics/panics.go:16 +0x3b
 created by main.main
-	server.go:20 +0x91`
+	server.go:20 +0x91
+`
 
 	GO_HTTP = `http: panic serving [::1]:54143: test panic
-
 goroutine 24 [running]:
 net/http.(*conn).serve.func1(0xc00007eaa0)
 	/usr/local/go/src/net/http/server.go:1746 +0xd0
@@ -167,7 +217,8 @@ net/http.serverHandler.ServeHTTP(0xc000085040, 0x12f0ea0, 0xc00010e1c0, 0xc00010
 net/http.(*conn).serve(0xc00007eaa0, 0x12f10a0, 0xc00008a780)
 	/usr/local/go/src/net/http/server.go:1847 +0x646
 created by net/http.(*Server).Serve
-	/usr/local/go/src/net/http/server.go:2851 +0x2f5`
+	/usr/local/go/src/net/http/server.go:2851 +0x2f5
+`
 
 	CSHARP_NESTED_EXC = `System.InvalidOperationException: This is the outer exception ---> System.InvalidOperationException: This is the inner exception
   at ExampleApp.NestedExceptionExample.LowestLevelMethod() in c:/ExampleApp/ExampleApp/NestedExceptionExample.cs:line 33
@@ -176,7 +227,8 @@ created by net/http.(*Server).Serve
   --- End of inner exception stack trace ---
   at ExampleApp.NestedExceptionExample.SecondLevelMethod() in c:/ExampleApp/ExampleApp/NestedExceptionExample.cs:line 22
   at ExampleApp.NestedExceptionExample.TopLevelMethod() in c:/ExampleApp/ExampleApp/NestedExceptionExample.cs:line 11
-  at ExampleApp.Program.Main(String[] args) in c:/ExampleApp/ExampleApp/Program.cs:line 11`
+  at ExampleApp.Program.Main(String[] args) in c:/ExampleApp/ExampleApp/Program.cs:line 11
+`
 
 	CSHARP_ASYNC_EXC = `System.InvalidOperationException: This is an exception
    at ExampleApp2.AsyncExceptionExample.LowestLevelMethod() in c:/ExampleApp/ExampleApp/AsyncExceptionExample.cs:line 36
@@ -190,7 +242,8 @@ created by net/http.(*Server).Serve
    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
    at System.Runtime.CompilerServices.TaskAwaiter.GetResult()
-   at ExampleApp2.AsyncExceptionExample.<TopLevelMethod>d__0.MoveNext() in c:/ExampleApp/ExampleApp/AsyncExceptionExample.cs:line 14`
+   at ExampleApp2.AsyncExceptionExample.<TopLevelMethod>d__0.MoveNext() in c:/ExampleApp/ExampleApp/AsyncExceptionExample.cs:line 14
+`
 
 	DART_ERR = `Unhandled exception:
 Instance of 'MyError'
@@ -198,7 +251,8 @@ Instance of 'MyError'
 #1      printError (file:///path/to/code/dartFile.dart:37:13)
 #2      main (file:///path/to/code/dartFile.dart:15:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_EXC = `Unhandled exception:
 Exception: exception message
@@ -206,7 +260,8 @@ Exception: exception message
 #1      printError (file:///path/to/code/dartFile.dart:37:13)
 #2      main (file:///path/to/code/dartFile.dart:17:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_ASYNC_ERR = `Unhandled exception:
 Bad state: oops
@@ -214,7 +269,8 @@ Bad state: oops
 #1      main (file:///test/example/http/handling_an_httprequest_error.dart:24:5)
 <asynchronous suspension>
 #2      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#3      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#3      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_DIVIDE_BY_ZERO_ERR = `Unhandled exception:
 IntegerDivisionByZeroException
@@ -222,7 +278,8 @@ IntegerDivisionByZeroException
 #1      printError (file:///path/to/code/dartFile.dart:42:13)
 #2      main (file:///path/to/code/dartFile.dart:27:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_ARGUMENT_ERR = `Unhandled exception:
 Invalid argument(s): invalid argument
@@ -230,7 +287,8 @@ Invalid argument(s): invalid argument
 #1      printError (file:///path/to/code/dartFile.dart:42:13)
 #2      main (file:///path/to/code/dartFile.dart:23:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_RANGE_ERR = `Unhandled exception:
 RangeError (index): Invalid value: Valid value range is empty: 1
@@ -239,7 +297,8 @@ RangeError (index): Invalid value: Valid value range is empty: 1
 #2      printError (file:///path/to/code/dartFile.dart:42:13)
 #3      main (file:///path/to/code/dartFile.dart:29:3)
 #4      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#5      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#5      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_ASSERTION_ERR = `Unhandled exception:
 Assertion failed
@@ -247,7 +306,8 @@ Assertion failed
 #1      printError (file:///path/to/code/dartFile.dart:36:13)
 #2      main (file:///path/to/code/dartFile.dart:9:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_ABSTRACT_CLASS_ERR = `Unhandled exception:
 Cannot instantiate abstract class LNClassName: _url 'null' line null
@@ -255,7 +315,8 @@ Cannot instantiate abstract class LNClassName: _url 'null' line null
 #1      printError (file:///path/to/code/dartFile.dart:36:13)
 #2      main (file:///path/to/code/dartFile.dart:12:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_READ_STATIC_ERR = `Unhandled exception:
 Reading static variable 'variable' during its initialization
@@ -263,7 +324,8 @@ Reading static variable 'variable' during its initialization
 #1      printError (file:///path/to/code/dartFile.dart:43:13)
 #2      main (file:///path/to/code/dartFile.dart:28:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_UNIMPLEMENTED_ERROR = `Unhandled exception:
 UnimplementedError: unimplemented
@@ -271,7 +333,8 @@ UnimplementedError: unimplemented
 #1      printError (file:///path/to/code/dartFile.dart:61:13)
 #2      main (file:///path/to/code/dartFile.dart:38:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_UNSUPPORTED_ERR = `Unhandled exception:
 Unsupported operation: unsupported
@@ -279,7 +342,8 @@ Unsupported operation: unsupported
 #1      printError (file:///path/to/code/dartFile.dart:61:13)
 #2      main (file:///path/to/code/dartFile.dart:36:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_CONCURRENT_MODIFICATION_ERR = `Unhandled exception:
 Concurrent modification during iteration.
@@ -287,7 +351,8 @@ Concurrent modification during iteration.
 #1      printError (file:///path/to/code/dartFile.dart:61:13)
 #2      main (file:///path/to/code/dartFile.dart:35:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_OOM_ERR = `Unhandled exception:
 Out of Memory
@@ -295,7 +360,8 @@ Out of Memory
 #1      printError (file:///path/to/code/dartFile.dart:61:13)
 #2      main (file:///path/to/code/dartFile.dart:34:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_STACK_OVERFLOW_ERR = `Unhandled exception:
 Stack Overflow
@@ -303,7 +369,8 @@ Stack Overflow
 #1      printError (file:///path/to/code/dartFile.dart:61:13)
 #2      main (file:///path/to/code/dartFile.dart:33:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_FALLTHROUGH_ERR = `Unhandled exception:
 'null': Switch case fall-through at line null.
@@ -311,7 +378,8 @@ Stack Overflow
 #1      printError (file:///path/to/code/dartFile.dart:51:13)
 #2      main (file:///path/to/code/dartFile.dart:39:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_TYPE_ERR = `Unhandled exception:
 'file:///path/to/code/dartFile.dart': malformed type: line 7 pos 24: cannot resolve class 'NoType' from '::'
@@ -322,7 +390,8 @@ Stack Overflow
 #2      printError (file:///path/to/code/dartFile.dart:36:13)
 #3      main (file:///path/to/code/dartFile.dart:7:3)
 #4      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#5      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#5      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_FORMAT_ERR = `Unhandled exception:
 FormatException: format exception
@@ -330,7 +399,8 @@ FormatException: format exception
 #1      printError (file:///path/to/code/dartFile.dart:42:13)
 #2      main (file:///path/to/code/dartFile.dart:25:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_FORMAT_WITH_CODE_ERR = `Unhandled exception:
 FormatException: Invalid base64 data (at line 3, character 8)
@@ -340,7 +410,8 @@ this is not valid
 #1      printError (file:///path/to/code/dartFile.dart:42:13)
 #2      main (file:///path/to/code/dartFile.dart:24:3)
 #3      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#4      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_NO_METHOD_ERR = `Unhandled exception:
 NoSuchMethodError: No constructor 'TypeError' with matching arguments declared in class 'TypeError'.
@@ -352,7 +423,8 @@ Found: new TypeError()
 #2      printError (file:///path/to/code/dartFile.dart:36:13)
 #3      main (file:///path/to/code/dartFile.dart:8:3)
 #4      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#5      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#5      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	DART_NO_METHOD_GLOBAL_ERR = `Unhandled exception:
 NoSuchMethodError: No top-level method 'noMethod' declared.
@@ -363,40 +435,75 @@ Tried calling: noMethod()
 #2      printError (file:///path/to/code/dartFile.dart:36:13)
 #3      main (file:///path/to/code/dartFile.dart:10:3)
 #4      _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:265)
-#5      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)`
+#5      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:151)
+`
 
 	ARBITRARY_TEXT = `This arbitrary text.
 It sounds tympanic: a word which means like a drum.
-I am glad it contains no exception.`
+I am glad it contains no exception.
+`
 )
 
 // supported multilines stacktraces: https://github.com/GoogleCloudPlatform/fluent-plugin-detect-exceptions/blob/master/test/plugin/test_exception_detector.rb
 func main() {
-	newLogs := []string{
-		JAVA_EXC,
-		COMPLEX_JAVA_EXC,
-		//NESTED_JAVA_EXC,
-		//NODE_JS_EXC,
-		//PHP_EXC,
-		//PHP_ON_GAE_EXC,
-		GO_EXC,
-		//PYTHON_EXC,
-		//GO_ON_GAE_EXC,
-		//GO_SIGNAL_EXC,
-		//GO_HTTP,
-		//CSHARP_ASYNC_EXC,
-		//CSHARP_NESTED_EXC,
-		//DART_ABSTRACT_CLASS_ERR,
-		//DART_ARGUMENT_ERR,
+	newLogs := []string{}
+
+	logType := flag.String("log-type", "java", "type of programming language used to generate multiline logs, such as java, python")
+	count := flag.Int("count", 42, "number of logs to generate per minute, 0 is infinite - cannot be used with -t")
+
+	flag.Parse()
+	switch *logType {
+	case "go":
+		{
+			newLogs = append(newLogs, GO_EXC, GO_ON_GAE_EXC, GO_SIGNAL_EXC, GO_HTTP)
+		}
+	case "go_exc":
+		{
+			newLogs = append(newLogs, GO_EXC)
+		}
+	case "go_on_gae_exc":
+		{
+			newLogs = append(newLogs, GO_ON_GAE_EXC)
+		}
+	case "go_signal_exc":
+		{
+			newLogs = append(newLogs, GO_SIGNAL_EXC)
+		}
+	case "go_http":
+		{
+			newLogs = append(newLogs, GO_HTTP)
+		}
+	case "java":
+		{
+			newLogs = append(newLogs, JAVA_EXC, COMPLEX_JAVA_EXC, NESTED_JAVA_EXC)
+		}
+	case "java_exc":
+		{
+			newLogs = append(newLogs, JAVA_EXC)
+		}
+	case "complex_java_exc":
+		{
+			newLogs = append(newLogs, COMPLEX_JAVA_EXC)
+		}
+	case "nested_java_exc":
+		{
+			newLogs = append(newLogs, NESTED_JAVA_EXC)
+		}
+	case "php":
+		{
+			newLogs = append(newLogs, PHP_EXC, PHP_ON_GAE_EXC)
+		}
+	case "python":
+		{
+			newLogs = append(newLogs, PYTHON_EXC)
+		}
 	}
+	sleepTime := 60 / *count
 
 	for true {
 		for _, log := range newLogs {
-			for i := 0; i < 10; i++ {
-				fmt.Fprint(os.Stderr, time.Now(), log)
-				time.Sleep(5 * time.Second)
-			}
+			fmt.Fprint(os.Stderr, log)
+			time.Sleep(time.Duration(sleepTime) * time.Second)
 		}
 	}
-
 }

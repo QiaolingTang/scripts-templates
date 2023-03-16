@@ -1,3 +1,5 @@
 #!/bin/bash
 
-go run /multiline-log.go
+params=`cat /var/lib/logging/multiline-log.cfg`
+
+./multiline-log ${params}

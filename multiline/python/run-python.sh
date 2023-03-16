@@ -1,3 +1,5 @@
 #!/bin/bash
 
-python3 ./multiline-log.py
+params=`cat /var/lib/logging/multiline-log.cfg`
+
+python3 ./multiline-log.py ${params}
