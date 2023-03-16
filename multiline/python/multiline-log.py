@@ -432,10 +432,13 @@ def delay(sleep_time):
       time.sleep(sleep_time)
     return
 
-def generate_log(count, log_type):
+def generate_log(rate, log_type):
     logger = init_logger()
 
-    sleep_time = 60.00/float(count)
+    if float(rate) <= 0.0:
+        sleep_time = 0.0
+    else:
+        sleep_time = 60.00/float(rate)
 
     java_log = [JAVA_EXC, COMPLEX_JAVA_EXC, NESTED_JAVA_EXC]
     go_log = [GO_EXC, GO_ON_GAE_EXC, GO_SIGNAL_EXC, GO_HTTP]
@@ -477,10 +480,10 @@ def generate_log(count, log_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='variables for generating multiline logs')
-    parser.add_argument('-c','--count', dest='count', type=float, default=30.00,
-                    help='number of logs to generate per minute, 0 is infinite - cannot be used with -c')
+    parser.add_argument('-r','--rate', dest='rate', type=float, default=30.00,
+                    help='number of logs to generate per minute, 0 is infinite')
     parser.add_argument('-t', '--log-type',dest='log_type', type=str, default='java',
                     help='type of programming language used to generate multiline logs, such as java, go')
     args = parser.parse_args()
 
-    generate_log(args.count, args.log_type)
+    generate_log(args.rate, args.log_type)

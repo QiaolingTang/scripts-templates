@@ -25,7 +25,7 @@ objects:
       metadata:
         annotations:
           capabilities: Seamless Upgrades
-          containerImage: quay.io/qiaolingtang/multiline:go-v0.9
+          containerImage: quay.io/qiaolingtang/multiline:v0.1
           support: Qiaoling Tang
         creationTimestamp: null
         labels:
@@ -36,7 +36,7 @@ objects:
           - /run-go.sh
           command:
           - /bin/sh
-          image: quay.io/qiaolingtang/multiline:go-v0.9
+          image: quay.io/qiaolingtang/multiline:v0.1
           imagePullPolicy: IfNotPresent
           name: multiline-log
           resources: {}
@@ -59,7 +59,7 @@ objects:
 - apiVersion: v1
   data:
     multiline-log.cfg: |
-      --count 30 --log-type python
+      --rate 30 --log-type python
   kind: ConfigMap
   metadata:
     name: multiline-log

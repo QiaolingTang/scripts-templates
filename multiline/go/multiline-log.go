@@ -463,7 +463,7 @@ func main() {
 	goLogs := []string{GO_EXC, GO_ON_GAE_EXC, GO_SIGNAL_EXC, GO_HTTP}
 
 	logType := flag.String("log-type", "java", "type of programming language used to generate multiline logs, such as java, python")
-	count := flag.Float64("count", 30.00, "number of logs to generate per minute, 0 is infinite - cannot be used with -c")
+	rate := flag.Float64("rate", 30.00, "number of logs to generate per minute, 0 is infinite")
 
 	flag.Parse()
 	switch *logType {
@@ -518,7 +518,12 @@ func main() {
 			newLogs = append(newLogs, goLogs...)
 		}
 	}
-	sleepTime := 60.00 / *count
+	var sleepTime float64
+	if *rate <= float64(0.0) {
+		sleepTime = 0.0
+	} else {
+		sleepTime = 60.00 / *rate
+	}
 
 	for true {
 		for _, log := range newLogs {
