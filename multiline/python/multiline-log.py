@@ -79,6 +79,23 @@ NODE_JS_EXC = '''ReferenceError: myArray is not defined
   at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)
   at /app/app.js:52:3'''
 
+
+CLIENT_JS_EXC = '''Error
+    at bls (<anonymous>:3:9)
+    at <anonymous>:6:4
+    at a_function_name
+    at Object.InjectedScript._evaluateOn (http://<anonymous>/file.js?foo=bar:875:140)
+    at Object.InjectedScript.evaluate (<anonymous>)'''
+
+V8_JS_EXC = '''V8 errors stack trace
+  eval at Foo.a (eval at Bar.z (myscript.js:10:3))
+  at new Contructor.Name (native)
+  at new FunctionName (unknown location)
+  at Type.functionName [as methodName] (file(copy).js?query='yes':12:9)
+  at functionName [as methodName] (native)
+  at Type.main(sample(copy).js:6:4)'''
+
+
 PYTHON_EXC = '''Traceback (most recent call last):
 	File "/base/data/home/runtimes/python27/python27_lib/versions/third_party/webapp2-2.5.2/webapp2.py", line 1535, in __call__
 	  rv = self.handle_exception(request, response, e)
@@ -444,6 +461,7 @@ def generate_log(rate, log_type):
     go_log = [GO_EXC, GO_ON_GAE_EXC, GO_SIGNAL_EXC, GO_HTTP]
     python_log = [PYTHON_EXC]
     php_log = [PHP_EXC, PHP_ON_GAE_EXC]
+    js_log = [V8_JS_EXC, NODE_JS_EXC, CLIENT_JS_EXC]
     all = java_log + go_log + python_log + php_log
 
     logs = []
@@ -469,6 +487,14 @@ def generate_log(rate, log_type):
         logs = python_log
     elif log_type == "php":
         logs = php_log
+    elif log_type == "v8_js":
+        logs = V8_JS_EXC
+    elif log_type == "node_js":
+        logs = NODE_JS_EXC
+    elif log_type == "client_js":
+        logs = CLIENT_JS_EXC
+    elif log_type == "js":
+        logs = js_log
     else:
         logs = all
 

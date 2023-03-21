@@ -87,6 +87,23 @@ Caused by: com.sun.mail.smtp.SMTPAddressFailedException: 550 5.7.1 <[REDACTED_EM
   at /app/app.js:52:3
 `
 
+	CLIENT_JS_EXC = `Error
+    at bls (<anonymous>:3:9)
+    at <anonymous>:6:4
+    at a_function_name
+    at Object.InjectedScript._evaluateOn (http://<anonymous>/file.js?foo=bar:875:140)
+    at Object.InjectedScript.evaluate (<anonymous>)
+`
+
+	V8_JS_EXC = `V8 errors stack trace
+  eval at Foo.a (eval at Bar.z (myscript.js:10:3))
+  at new Contructor.Name (native)
+  at new FunctionName (unknown location)
+  at Type.functionName [as methodName] (file(copy).js?query='yes':12:9)
+  at functionName [as methodName] (native)
+  at Type.main(sample(copy).js:6:4)
+`
+
 	PYTHON_EXC = `Traceback (most recent call last):
   File "/base/data/home/runtimes/python27/python27_lib/versions/third_party/webapp2-2.5.2/webapp2.py", line 1535, in __call__
     rv = self.handle_exception(request, response, e)
@@ -461,6 +478,7 @@ func main() {
 	newLogs := []string{}
 	javaLogs := []string{JAVA_EXC, COMPLEX_JAVA_EXC, NESTED_JAVA_EXC}
 	goLogs := []string{GO_EXC, GO_ON_GAE_EXC, GO_SIGNAL_EXC, GO_HTTP}
+	jsLogs := []string{CLIENT_JS_EXC, NODE_JS_EXC, V8_JS_EXC}
 
 	logType := flag.String("log-type", "java", "type of programming language used to generate multiline logs, such as java, python")
 	rate := flag.Float64("rate", 30.00, "number of logs to generate per minute, 0 is infinite")
@@ -510,6 +528,22 @@ func main() {
 	case "python":
 		{
 			newLogs = append(newLogs, PYTHON_EXC)
+		}
+	case "js":
+		{
+			newLogs = append(newLogs, jsLogs...)
+		}
+	case "node_js":
+		{
+			newLogs = append(newLogs, NODE_JS_EXC)
+		}
+	case "client_js":
+		{
+			newLogs = append(newLogs, CLIENT_JS_EXC)
+		}
+	case "v8_js":
+		{
+			newLogs = append(newLogs, V8_JS_EXC)
 		}
 	default:
 		{
