@@ -389,6 +389,7 @@ DART_FORMAT_WITH_CODE_ERR = '''Unhandled exception:
 FormatException: Invalid base64 data (at line 3, character 8)
 this is not valid
        ^
+
 #0      main.<anonymous closure> (file:///path/to/code/dartFile.dart:24:20)
 #1      printError (file:///path/to/code/dartFile.dart:42:13)
 #2      main (file:///path/to/code/dartFile.dart:24:3)
@@ -462,7 +463,10 @@ def generate_log(rate, log_type):
     python_log = [PYTHON_EXC]
     php_log = [PHP_EXC, PHP_ON_GAE_EXC]
     js_log = [V8_JS_EXC, NODE_JS_EXC, CLIENT_JS_EXC]
-    all = java_log + go_log + python_log + php_log
+    csharp_log = [CSHARP_ASYNC_EXC, CSHARP_NESTED_EXC]
+    dart_log = [DART_ABSTRACT_CLASS_ERR, DART_ARGUMENT_ERR, DART_ASSERTION_ERR, DART_ASYNC_ERR, DART_CONCURRENT_MODIFICATION_ERR, DART_DIVIDE_BY_ZERO_ERR, DART_ERR, DART_EXC, DART_FALLTHROUGH_ERR, DART_FORMAT_ERR, DART_FORMAT_WITH_CODE_ERR, DART_NO_METHOD_ERR]
+
+    all = java_log + go_log + python_log + php_log + csharp_log + dart_log + js_log
 
     logs = []
     if log_type == "java":
@@ -495,6 +499,10 @@ def generate_log(rate, log_type):
         logs = CLIENT_JS_EXC
     elif log_type == "js":
         logs = js_log
+    elif log_type == "csharp":
+        logs = csharp_log
+    elif log_type == "dart":
+        logs = dart_log
     else:
         logs = all
 

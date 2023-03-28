@@ -423,6 +423,7 @@ FormatException: format exception
 FormatException: Invalid base64 data (at line 3, character 8)
 this is not valid
        ^
+
 #0      main.<anonymous closure> (file:///path/to/code/dartFile.dart:24:20)
 #1      printError (file:///path/to/code/dartFile.dart:42:13)
 #2      main (file:///path/to/code/dartFile.dart:24:3)
@@ -479,6 +480,21 @@ func main() {
 	javaLogs := []string{JAVA_EXC, COMPLEX_JAVA_EXC, NESTED_JAVA_EXC}
 	goLogs := []string{GO_EXC, GO_ON_GAE_EXC, GO_SIGNAL_EXC, GO_HTTP}
 	jsLogs := []string{CLIENT_JS_EXC, NODE_JS_EXC, V8_JS_EXC}
+	csharpLogs := []string{CSHARP_ASYNC_EXC, CSHARP_NESTED_EXC}
+	dartLogs := []string{
+		DART_ABSTRACT_CLASS_ERR,
+		DART_ARGUMENT_ERR,
+		DART_ASSERTION_ERR,
+		DART_ASYNC_ERR,
+		DART_CONCURRENT_MODIFICATION_ERR,
+		DART_DIVIDE_BY_ZERO_ERR,
+		DART_ERR,
+		DART_EXC,
+		DART_FALLTHROUGH_ERR,
+		DART_FORMAT_ERR,
+		DART_FORMAT_WITH_CODE_ERR,
+		DART_NO_METHOD_ERR,
+	}
 
 	logType := flag.String("log-type", "java", "type of programming language used to generate multiline logs, such as java, python")
 	rate := flag.Float64("rate", 30.00, "number of logs to generate per minute, 0 is infinite")
@@ -545,11 +561,22 @@ func main() {
 		{
 			newLogs = append(newLogs, V8_JS_EXC)
 		}
+	case "csharp":
+		{
+			newLogs = append(newLogs, csharpLogs...)
+		}
+	case "dart":
+		{
+			newLogs = append(newLogs, dartLogs...)
+		}
 	default:
 		{
 			newLogs = append(newLogs, PYTHON_EXC, PHP_EXC, PHP_ON_GAE_EXC)
 			newLogs = append(newLogs, javaLogs...)
 			newLogs = append(newLogs, goLogs...)
+			newLogs = append(newLogs, jsLogs...)
+			newLogs = append(newLogs, csharpLogs...)
+			newLogs = append(newLogs, dartLogs...)
 		}
 	}
 	var sleepTime float64
