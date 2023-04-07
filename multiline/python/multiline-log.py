@@ -222,6 +222,18 @@ net/http.(*conn).serve(0xc00007eaa0, 0x12f10a0, 0xc00008a780)
 created by net/http.(*Server).Serve
 	/usr/local/go/src/net/http/server.go:2851 +0x2f5'''
 
+CSHARP_EXC ='''System.Collections.Generic.KeyNotFoundException: The given key was not present in the dictionary.
+    at System.Collections.Generic.Dictionary`2[System.String,System.Collections.Generic.Dictionary`2[System.Int32,System.Double]].get_Item (System.String key) [0x00000] in <filename unknown>:0
+    at File3.Consolidator_Class.Function5 (System.Collections.Generic.Dictionary`2 names, System.Text.StringBuilder param_4) [0x00007] in /usr/local/google/home/Csharp/another file.csharp:9
+    at File3.Consolidator_Class.Function4 (System.Text.StringBuilder param_4, System.Double[,,] array) [0x00013] in /usr/local/google/home/Csharp/another file.csharp:23
+    at File3.Consolidator_Class.Function3 (Int32 param_3) [0x0000f] in /usr/local/google/home/Csharp/another file.csharp:27
+    at File3.Consolidator_Class.Function3 (System.Text.StringBuilder param_3) [0x00007] in /usr/local/google/home/Csharp/another file.csharp:32
+    at File2.Processor.Function2 (System.Int32& param_2, System.Collections.Generic.Stack`1& numbers) [0x00003] in /usr/local/google/home/Csharp/File2.csharp:19
+    at File2.Processor.Random2 () [0x00037] in /usr/local/google/home/Csharp/File2.csharp:28
+    at File2.Processor.Function1 (Int32 param_1, System.Collections.Generic.Dictionary`2 map) [0x00007] in /usr/local/google/home/Csharp/File2.csharp:34
+    at Main.Welcome+<Main>c__AnonStorey0.<>m__0 () [0x00006] in /usr/local/google/home/Csharp/hello.csharp:48
+    at System.Threading.Thread.StartInternal () [0x00000] in <filename unknown>:0'''
+
 CSHARP_NESTED_EXC = '''System.InvalidOperationException: This is the outer exception ---> System.InvalidOperationException: This is the inner exception
   at ExampleApp.NestedExceptionExample.LowestLevelMethod() in c:/ExampleApp/ExampleApp/NestedExceptionExample.cs:line 33
   at ExampleApp.NestedExceptionExample.ThirdLevelMethod() in c:/ExampleApp/ExampleApp/NestedExceptionExample.cs:line 28
@@ -244,6 +256,43 @@ CSHARP_ASYNC_EXC = '''System.InvalidOperationException: This is an exception
    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
    at System.Runtime.CompilerServices.TaskAwaiter.GetResult()
    at ExampleApp2.AsyncExceptionExample.<TopLevelMethod>d__0.MoveNext() in c:/ExampleApp/ExampleApp/AsyncExceptionExample.cs:line 14'''
+
+RUBY_EXC = """NoMethodError (undefined method `resursivewordload' for #<BooksController:0x007f8dd9a0c738>):
+ app/controllers/books_controller.rb:69:in `recursivewordload'
+ app/controllers/books_controller.rb:75:in `loadword'
+ app/controllers/books_controller.rb:79:in `loadline'
+ app/controllers/books_controller.rb:83:in `loadparagraph'
+ app/controllers/books_controller.rb:87:in `loadpage'
+ app/controllers/books_controller.rb:91:in `onload'
+ app/controllers/books_controller.rb:95:in `loadrecursive'
+ app/controllers/books_controller.rb:99:in `requestload'
+ app/controllers/books_controller.rb:118:in `generror'
+ config/error_reporting_logger.rb:62:in `tagged'"""
+
+# The whitespace on the second line is significant.
+RAILS_EXC = """ ActionController::RoutingError (No route matches [GET] "/settings"):
+  
+  actionpack (5.1.4) lib/action_dispatch/middleware/debug_exceptions.rb:63:in `call'
+  actionpack (5.1.4) lib/action_dispatch/middleware/show_exceptions.rb:31:in `call'
+  railties (5.1.4) lib/rails/rack/logger.rb:36:in `call_app'
+  railties (5.1.4) lib/rails/rack/logger.rb:24:in `block in call'
+  activesupport (5.1.4) lib/active_support/tagged_logging.rb:69:in `block in tagged'
+  activesupport (5.1.4) lib/active_support/tagged_logging.rb:26:in `tagged'
+  activesupport (5.1.4) lib/active_support/tagged_logging.rb:69:in `tagged'
+  railties (5.1.4) lib/rails/rack/logger.rb:24:in `call'
+  actionpack (5.1.4) lib/action_dispatch/middleware/remote_ip.rb:79:in `call'
+  actionpack (5.1.4) lib/action_dispatch/middleware/request_id.rb:25:in `call'
+  rack (2.0.3) lib/rack/method_override.rb:22:in `call'
+  rack (2.0.3) lib/rack/runtime.rb:22:in `call'
+  activesupport (5.1.4) lib/active_support/cache/strategy/local_cache_middleware.rb:27:in `call'
+  actionpack (5.1.4) lib/action_dispatch/middleware/executor.rb:12:in `call'
+  rack (2.0.3) lib/rack/sendfile.rb:111:in `call'
+  railties (5.1.4) lib/rails/engine.rb:522:in `call'
+  puma (3.10.0) lib/puma/configuration.rb:225:in `call'
+  puma (3.10.0) lib/puma/server.rb:605:in `handle_request'
+  puma (3.10.0) lib/puma/server.rb:437:in `process_client'
+  puma (3.10.0) lib/puma/server.rb:301:in `block in run'
+  puma (3.10.0) lib/puma/thread_pool.rb:120:in `block in spawn_thread'"""
 
 DART_ERR = '''Unhandled exception:
 Instance of 'MyError'
@@ -370,6 +419,8 @@ DART_TYPE_ERR = '''Unhandled exception:
 'file:///path/to/code/dartFile.dart': malformed type: line 7 pos 24: cannot resolve class 'NoType' from '::'
   printError( () { new NoType(); } );
                        ^
+
+
 #0      _TypeError._throwNew (dart:core-patch/errors_patch.dart:82)
 #1      main.<anonymous closure> (file:///path/to/code/dartFile.dart:7:24)
 #2      printError (file:///path/to/code/dartFile.dart:36:13)
@@ -461,12 +512,32 @@ def generate_log(rate, log_type):
     java_log = [JAVA_EXC, COMPLEX_JAVA_EXC, NESTED_JAVA_EXC]
     go_log = [GO_EXC, GO_ON_GAE_EXC, GO_SIGNAL_EXC, GO_HTTP]
     python_log = [PYTHON_EXC]
+    ruby_log = [RUBY_EXC, RAILS_EXC]
     php_log = [PHP_EXC, PHP_ON_GAE_EXC]
     js_log = [V8_JS_EXC, NODE_JS_EXC, CLIENT_JS_EXC]
-    csharp_log = [CSHARP_ASYNC_EXC, CSHARP_NESTED_EXC]
-    dart_log = [DART_ABSTRACT_CLASS_ERR, DART_ARGUMENT_ERR, DART_ASSERTION_ERR, DART_ASYNC_ERR, DART_CONCURRENT_MODIFICATION_ERR, DART_DIVIDE_BY_ZERO_ERR, DART_ERR, DART_EXC, DART_FALLTHROUGH_ERR, DART_FORMAT_ERR, DART_FORMAT_WITH_CODE_ERR, DART_NO_METHOD_ERR]
+    csharp_log = [CSHARP_ASYNC_EXC, CSHARP_NESTED_EXC, CSHARP_EXC]
+    dart_log = [DART_ABSTRACT_CLASS_ERR,
+		DART_ARGUMENT_ERR,
+		DART_ASSERTION_ERR,
+		DART_ASYNC_ERR,
+		DART_CONCURRENT_MODIFICATION_ERR,
+		DART_DIVIDE_BY_ZERO_ERR,
+		DART_ERR,
+		DART_TYPE_ERR,
+		DART_EXC,
+		DART_UNSUPPORTED_ERR,
+		DART_UNIMPLEMENTED_ERROR,
+		DART_OOM_ERR,
+		DART_RANGE_ERR,
+		DART_READ_STATIC_ERR,
+		DART_STACK_OVERFLOW_ERR,
+		DART_FALLTHROUGH_ERR,
+		DART_FORMAT_ERR,
+		DART_FORMAT_WITH_CODE_ERR,
+		DART_NO_METHOD_ERR,
+		DART_NO_METHOD_GLOBAL_ERR]
 
-    all = java_log + go_log + python_log + php_log + csharp_log + dart_log + js_log
+    all = java_log + go_log + python_log + php_log + csharp_log + dart_log + js_log + ruby_log
 
     logs = []
     if log_type == "java":
@@ -489,6 +560,8 @@ def generate_log(rate, log_type):
         logs = [GO_HTTP]
     elif log_type == "python":
         logs = python_log
+    elif log_type == "ruby":
+        logs = ruby_log
     elif log_type == "php":
         logs = php_log
     elif log_type == "v8_js":
