@@ -15,7 +15,7 @@ spec:
     metadata:
       annotations:
         capabilities: Seamless Upgrades
-        containerImage: quay.io/qiaolingtang/generate-log:latest
+        containerImage: quay.io/qiaolingtang/generate-log:v0.1
         support: Qiaoling Tang
       creationTimestamp: null
       labels:
@@ -26,7 +26,7 @@ spec:
         - /run.sh
         command:
         - /bin/sh
-        image: quay.io/qiaolingtang/generate-log:latest
+        image: quay.io/qiaolingtang/generate-log:v0.1
         imagePullPolicy: IfNotPresent
         name: log4j2
         resources: {}
