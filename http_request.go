@@ -32,15 +32,6 @@ type HTTPClient struct {
 	statusCode      int
 }
 
-// newLokiClient initializes a lokiClient with server address
-func newLokiClient(routeAddress string) *HTTPClient {
-	client := &HTTPClient{}
-	client.address = routeAddress
-	client.retries = 5
-	client.quiet = true
-	return client
-}
-
 // retry sets how many times to retry each query
 func (c *HTTPClient) retry(retry int) *HTTPClient {
 	nc := *c
@@ -83,7 +74,11 @@ func (c *HTTPClient) do() {
 	if err != nil {
 		log.Fatalf("got error when getting http request header: %v", err)
 	}
-	doHTTPRequest(h, c.address, c.path, c.query, c.method, c.quiet, c.retries, bytes.NewReader([]byte(c.body)), c.statusCode)
+	res, err := doHTTPRequest(h, c.address, c.path, c.query, c.method, c.quiet, c.retries, bytes.NewReader([]byte(c.body)), c.statusCode)
+	if err != nil {
+		log.Fatalf("got error when running http request: %v", err)
+	}
+	fmt.Printf("the result is:\n%s", string(res))
 }
 
 func doHTTPRequest(header http.Header, address, path, query, method string, quiet bool, attempts int, requestBody io.Reader, expectedStatusCode int) ([]byte, error) {
@@ -92,7 +87,7 @@ func doHTTPRequest(header http.Header, address, path, query, method string, quie
 		return nil, err
 	}
 	if !quiet {
-		fmt.Printf(us)
+		log.Printf("the request URL is: %s", us)
 	}
 
 	req, err := http.NewRequest(strings.ToUpper(method), us, requestBody)
@@ -124,33 +119,19 @@ func doHTTPRequest(header http.Header, address, path, query, method string, quie
 	var resp *http.Response
 	success := false
 
-	if expectedStatusCode == 0 {
-		switch strings.ToUpper(method) {
-		case "GET":
-			{
-				expectedStatusCode = 200
-			}
-		case "POST":
-			{
-				expectedStatusCode = 201
-			}
-		}
-	}
-
 	for attempts > 0 {
 		attempts--
 
 		resp, err = client.Do(req)
 		if err != nil {
-			fmt.Printf("error sending request %v", err)
+			log.Printf("error sending request: %v", err)
 			continue
 		}
-		fmt.Printf("\n\n\nthe reponse code is: %d\n\n\n", resp.StatusCode)
 		if resp.StatusCode != expectedStatusCode {
 			buf, _ := io.ReadAll(resp.Body) // nolint
-			fmt.Printf("Error response from server: %s (%v) attempts remaining: %d", string(buf), err, attempts)
+			log.Printf("Error response from server: %s (%v) attempts remaining: %d", string(buf), err, attempts)
 			if err := resp.Body.Close(); err != nil {
-				fmt.Printf("error closing body", err)
+				log.Print("error closing body", err)
 			}
 			continue
 		}
@@ -163,7 +144,7 @@ func doHTTPRequest(header http.Header, address, path, query, method string, quie
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			fmt.Printf("error closing body", err)
+			log.Print("error closing body", err)
 		}
 	}()
 	return io.ReadAll(resp.Body)
@@ -233,6 +214,7 @@ func main() {
 	token := flag.String("token", "", "token")
 	tokenFile := flag.String("token-file", "", "token file path")
 	retry := flag.Int("retry", 5, "how many times will the request do when error happens")
+	quiet := flag.Bool("quiet", false, "to print the url or not")
 	flag.Parse()
 
 	var c HTTPClient
@@ -243,6 +225,7 @@ func main() {
 	c.body = *body
 	c.method = *method
 	c.statusCode = *expectedStatusCode
+	c.quiet = *quiet
 	if len(*username) > 0 && len(*password) > 0 {
 		c = *c.withBasicAuth(*username, *password)
 	}
@@ -254,5 +237,6 @@ func main() {
 	if len(*tokenFile) > 0 {
 		c = *c.withTokenFile(*tokenFile)
 	}
+	c.do()
 
 }
