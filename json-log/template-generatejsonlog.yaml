@@ -49,7 +49,9 @@ objects:
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
-        securityContext: {}
+        securityContext:
+          seccompProfile:
+            type: RuntimeDefault
         terminationGracePeriodSeconds: 30
         volumes:
         - configMap:
