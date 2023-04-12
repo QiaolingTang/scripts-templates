@@ -6,16 +6,16 @@ objects:
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
-    name: multiline-log
+    name: ${NAME}
     labels:
-      name: multiline-log
+      name: ${NAME}
   spec:
     progressDeadlineSeconds: 600
     replicas: 1
     revisionHistoryLimit: 10
     selector:
       matchLabels:
-        name: multiline-log
+        name: ${NAME}
     strategy:
       rollingUpdate:
         maxSurge: 25%
@@ -27,9 +27,8 @@ objects:
           capabilities: Seamless Upgrades
           containerImage: quay.io/qiaolingtang/multiline:v0.16
           support: Qiaoling Tang
-        creationTimestamp: null
         labels:
-          name: multiline-log
+          name: ${NAME}
       spec:
         containers:
         - args:
@@ -56,12 +55,19 @@ objects:
         volumes:
         - configMap:
             defaultMode: 420
-            name: multiline-log
+            name: ${NAME}
           name: config
 - apiVersion: v1
   data:
     multiline-log.cfg: |
-      --rate 30.00 --log-type all
+      --rate ${RATE} --log-type ${LOG_TYPE}
   kind: ConfigMap
   metadata:
-    name: multiline-log
+    name: ${NAME}
+parameters:
+- name: NAME
+  value: "multiline-log"
+- name: LOG_TYPE
+  value: "all"
+- name: RATE
+  value: "30.00"
