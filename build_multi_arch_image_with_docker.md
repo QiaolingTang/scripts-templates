@@ -1,4 +1,4 @@
-### install docker
+### Install docker
 ```
 sudo dnf -y install dnf-plugins-core
 sudo dnf config-manager \
@@ -12,7 +12,7 @@ sudo systemctl start docker
 sudo systemctl enable docker
 ```
 
-### build image
+### Build image
 ```
 docker buildx create --name mycustombuilder --driver docker-container --bootstrap
 
@@ -24,5 +24,5 @@ docker buildx build \
 --push \
 --platform linux/ppc64le,linux/arm64,linux/amd64,linux/s390x \
 --file Dockerfile \
---tag quay.io/qiaolingtang/multiline:v0.16 . \
+--tag quay.io/qiaolingtang/multiline:v0.16 .
 ```
