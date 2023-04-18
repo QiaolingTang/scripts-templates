@@ -654,8 +654,8 @@ func main() {
 	}
 
 	for true {
-		for _, log := range newLogs {
-			fmt.Fprint(os.Stderr, log)
+		for i := 0; i < len(newLogs); i++ {
+			fmt.Fprint(os.Stderr, newLogs[i])
 			delay(sleepTime)
 		}
 	}
