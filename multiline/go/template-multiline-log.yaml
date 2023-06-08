@@ -25,7 +25,7 @@ objects:
       metadata:
         annotations:
           capabilities: Seamless Upgrades
-          containerImage: quay.io/qiaolingtang/multiline:v0.16
+          containerImage: quay.io/qiaolingtang/multiline:v0.17
           support: Qiaoling Tang
         labels:
           name: ${NAME}
@@ -35,7 +35,7 @@ objects:
           - /run-go.sh
           command:
           - /bin/sh
-          image: quay.io/qiaolingtang/multiline:v0.16
+          image: quay.io/qiaolingtang/multiline:v0.17
           imagePullPolicy: IfNotPresent
           name: multiline-log
           resources: {}
