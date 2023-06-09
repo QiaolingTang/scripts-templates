@@ -94,3 +94,6 @@ spec:
   serviceAccountNames:
   - $serviceaccount
 ```
+
+# Forward Logs to CloudWatch on STS Cluster
+https://docs.openshift.com/container-platform/4.13/logging/cluster-logging-external.html#cluster-logging-collector-log-forward-sts-cloudwatch_cluster-logging-external
