@@ -96,4 +96,107 @@ spec:
 ```
 
 # Forward Logs to CloudWatch on STS Cluster
-https://docs.openshift.com/container-platform/4.13/logging/cluster-logging-external.html#cluster-logging-collector-log-forward-sts-cloudwatch_cluster-logging-external
+
+## Create CredentialsRequest
+```
+cat << EOF | oc create -f -
+apiVersion: cloudcredential.openshift.io/v1
+kind: CredentialsRequest
+metadata:
+  name: cloudwatch-credentials-credrequest
+  namespace: openshift-cloud-credential-operator
+spec:
+  providerSpec:
+    apiVersion: cloudcredential.openshift.io/v1
+    kind: AWSProviderSpec
+    statementEntries:
+      - action:
+          - logs:PutLogEvents
+          - logs:CreateLogGroup
+          - logs:PutRetentionPolicy
+          - logs:CreateLogStream
+          - logs:DescribeLogGroups
+          - logs:DescribeLogStreams
+        effect: Allow
+        resource: arn:aws:logs:*:*:*
+  secretRef:
+    name: cloudwatch-credentials
+    namespace: openshift-logging
+  serviceAccountNames:
+    - logcollector
+EOF
+```
+
+## Create Role in AWS
+```
+export OIDC_ENDPOINT=$(oc get authentication.config.openshift.io cluster -o json | jq -r .spec.serviceAccountIssuer | sed  's|^https://||')
+
+export AWS_ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
+
+export CLUSTER_NAME=$(oc get infrastructure cluster -o=jsonpath="{.status.infrastructureName}"  | sed 's/-[a-z0-9]\+$//')
+
+export REGION=$(oc get infrastructures.config.openshift.io cluster -ojsonpath={.status.platformStatus.aws.region})
+
+
+ccoctl aws create-iam-roles --name=${CLUSTER_NAME}-openshift-logging-cloudwatch-credentials --region=${REGION} --credentials-requests-dir=./ --identity-provider-arn=arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/${OIDC_ENDPOINT}
+```
+
+
+There will be a directory named `manifests` created:
+```
+# ls -l
+total 4
+drwx------. 2 root root  62 Jun  9 09:06 manifests
+
+# ls manifests/ -l
+total 4
+-rw-------. 1 root root 374 Jun  9 09:06 openshift-logging-cloudwatch-credentials-credentials.yaml
+```
+
+## Apply the Secret
+```
+# cat manifests/openshift-logging-cloudwatch-credentials-credentials.yaml
+apiVersion: v1
+stringData:
+  credentials: |-
+    [default]
+    sts_regional_endpoints = regional
+    role_arn = arn:aws:iam::${AWS_ACCOUNT_ID}:role/${role_name}
+    web_identity_token_file = /var/run/secrets/openshift/serviceaccount/token
+kind: Secret
+metadata:
+  name: cloudwatch-credentials
+  namespace: openshift-logging
+type: Opaque
+
+oc apply -f manifests/openshift-logging-cloudwatch-credentials-credentials.yaml
+```
+
+## Create CLF
+```
+apiVersion: "logging.openshift.io/v1"
+kind: ClusterLogForwarder
+metadata:
+  name: instance
+  namespace: openshift-logging
+spec:
+  outputs:
+   - name: cw
+     type: cloudwatch
+     cloudwatch:
+       groupBy: logType
+       groupPrefix: ${prefix}
+       region: ${REGION}
+     secret:
+        name: cloudwatch-credentials
+  pipelines:
+    - name: to-cloudwatch
+      inputRefs:
+        - infrastructure
+        - audit
+        - application
+      outputRefs:
+        - cw
+```
+
+Ref: https://docs.openshift.com/container-platform/4.13/logging/cluster-logging-external.html#cluster-logging-collector-log-forward-sts-cloudwatch_cluster-logging-external

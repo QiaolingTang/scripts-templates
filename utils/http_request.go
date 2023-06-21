@@ -74,11 +74,18 @@ func (c *HTTPClient) do() {
 	if err != nil {
 		log.Fatalf("got error when getting http request header: %v", err)
 	}
-	res, err := doHTTPRequest(h, c.address, c.path, c.query, c.method, c.quiet, c.retries, bytes.NewReader([]byte(c.body)), c.statusCode)
+	params := url.Values{}
+	if len(c.query) > 0 {
+		params.Add("query", c.query)
+	}
+	res, err := doHTTPRequest(h, c.address, c.path, params.Encode(), c.method, c.quiet, c.retries, bytes.NewReader([]byte(c.body)), c.statusCode)
 	if err != nil {
 		log.Fatalf("got error when running http request: %v", err)
 	}
-	fmt.Printf("the result is:\n%s", string(res))
+	if !c.quiet {
+		fmt.Printf("the result is:\n%s", string(res))
+	}
+	fmt.Printf(string(res))
 }
 
 func doHTTPRequest(header http.Header, address, path, query, method string, quiet bool, attempts int, requestBody io.Reader, expectedStatusCode int) ([]byte, error) {
@@ -214,7 +221,7 @@ func main() {
 	token := flag.String("token", "", "token")
 	tokenFile := flag.String("token-file", "", "token file path")
 	retry := flag.Int("retry", 5, "how many times will the request do when error happens")
-	quiet := flag.Bool("quiet", false, "to print the url or not")
+	quiet := flag.Bool("quiet", true, "to print the url or not")
 	flag.Parse()
 
 	var c HTTPClient
