@@ -1,0 +1,98 @@
+# Preparations
+
+1. Have docker or podman installed
+2. Have opm installed
+
+# Build bundle
+
+1. Download code from upstream
+```
+git clone git@github.com:grafana/loki.git
+git clone git@github.com:openshift/cluster-logging-operator.git
+git clone git@github.com:openshift/elasticsearch-operator.git
+```
+
+2. Copy manifests to a directory
+```
+mkdir bundles
+cp -r loki/operator/bundle/manifests loki-operator
+cp -r cluster-logging-operator/bundle/manifests cluster-logging
+cp -r elasticsearch-operator/bundle/manifests elasticsearch-operator
+```
+
+3. Modify manifests if needed, for loki, the CSV version is v0.0.1, if you want to do upgrade test, you have to change it to v5.x
+
+4. Build bundle image
+```
+opm alpha bundle build -b podman -c stable -e stable -d ./elasticsearch-operator/ -p elasticsearch-operator -t quay.io/logging/elasticsearch-operator-bundle:5.6 --overwrite
+podman push quay.io/logging/elasticsearch-operator-bundle:5.6
+
+opm alpha bundle build -b podman -c stable -e stable -d ./cluster-logging/ -p cluster-logging -t quay.io/logging/cluster-logging-operator-bundle:5.6 --overwrite
+podman push quay.io/logging/cluster-logging-operator-bundle:5.6
+
+opm alpha bundle build  -b podman -c stable -e stable -d ./loki-operator/ -p loki-operator -t quay.io/logging/loki-operator-bundle:5.6 --overwrite
+podman push quay.io/logging/loki-operator-bundle:5.6
+```
+
+Note: run `opm alpha bundle build --help` to check it's usage
+
+
+# Build index image
+We have 2 types of catalogs: file-based catalog and SQLite-based catalog.  Start from OCP 4.11, only the file-based catalog is supported.
+
+## SQLite-based catalog
+```
+opm index add -b quay.io/logging/cluster-logging-operator-bundle:5.6,quay.io/logging/elasticsearch-operator-bundle:5.6,quay.io/logging/loki-operator-bundle:5.6 -t quay.io/logging/logging-index:5.6 -c podman
+podman push quay.io/logging/logging-index:5.6
+```
+
+## File-based catalog
+
+### Build from existing index
+```
+mkdir catalog-test
+opm render quay.io/logging/logging-index:5.6 -o yaml > catalog-test/index.yaml
+opm generate dockerfile  catalog-test
+podman build . -f catalog-test.Dockerfile -t quay.io/logging/logging-index:5.6
+podman push quay.io/logging/logging-index:5.6
+```
+
+### Build from bundles
+```
+mkdir logging-index
+opm generate dockerfile logging-index
+touch logging-index/index.yaml
+
+opm init cluster-logging --default-channel=stable --output yaml >> logging-index/index.yaml
+echo "---
+entries:
+- name: cluster-logging.v5.6.0
+  skipRange: '>=4.6.0-0 <5.6.0'
+name: stable
+package: cluster-logging
+schema: olm.channel" >> logging-index/index.yaml
+opm render quay.io/logging/cluster-logging-operator-bundle:5.6 --output=yaml >> logging-index/index.yaml
+
+opm init elasticsearch-operator --default-channel=stable --output yaml >> logging-index/index.yaml
+echo "---
+entries:
+- name: elasticsearch-operator.v5.6.0
+  skipRange: '>=4.6.0-0 <5.6.0'
+name: stable
+package: elasticsearch-operator
+schema: olm.channel" >> logging-index/index.yaml
+opm render quay.io/logging/elasticsearch-operator-bundle:5.6 --output=yaml >> logging-index/index.yaml
+
+opm init loki-operator --default-channel=stable --output yaml >> logging-index/index.yaml
+echo "---
+entries:
+- name: loki-operator.v5.6.0
+  skipRange: '>=5.4.0-0 <5.6.0'
+name: stable
+package: loki-operator
+schema: olm.channel" >> logging-index/index.yaml
+opm render quay.io/logging/loki-operator-bundle:5.6 --output=yaml >> logging-index/index.yaml
+
+opm validate logging-index
+podman build . -f logging-index.Dockerfile -t quay.io/logging/logging-index:5.6
+```
