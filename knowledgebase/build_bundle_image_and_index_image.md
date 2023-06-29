@@ -24,14 +24,15 @@ cp -r elasticsearch-operator/bundle/manifests elasticsearch-operator
 
 4. Build bundle image
 ```
-opm alpha bundle build -b podman -c stable -e stable -d ./elasticsearch-operator/ -p elasticsearch-operator -t quay.io/logging/elasticsearch-operator-bundle:5.6 --overwrite
-podman push quay.io/logging/elasticsearch-operator-bundle:5.6
+export TAG="5.8"
+opm alpha bundle build -b podman -c stable -e stable -d ./elasticsearch-operator/ -p elasticsearch-operator -t quay.io/logging/elasticsearch-operator-bundle:${TAG} --overwrite
+podman push quay.io/logging/elasticsearch-operator-bundle:${TAG}
 
-opm alpha bundle build -b podman -c stable -e stable -d ./cluster-logging/ -p cluster-logging -t quay.io/logging/cluster-logging-operator-bundle:5.6 --overwrite
-podman push quay.io/logging/cluster-logging-operator-bundle:5.6
+opm alpha bundle build -b podman -c stable -e stable -d ./cluster-logging/ -p cluster-logging -t quay.io/logging/cluster-logging-operator-bundle:${TAG} --overwrite
+podman push quay.io/logging/cluster-logging-operator-bundle:${TAG}
 
-opm alpha bundle build  -b podman -c stable -e stable -d ./loki-operator/ -p loki-operator -t quay.io/logging/loki-operator-bundle:5.6 --overwrite
-podman push quay.io/logging/loki-operator-bundle:5.6
+opm alpha bundle build  -b podman -c stable -e stable -d ./loki-operator/ -p loki-operator -t quay.io/logging/loki-operator-bundle:${TAG} --overwrite
+podman push quay.io/logging/loki-operator-bundle:${TAG}
 ```
 
 Note: run `opm alpha bundle build --help` to check it's usage
@@ -42,8 +43,8 @@ We have 2 types of catalogs: file-based catalog and SQLite-based catalog.  Start
 
 ## SQLite-based catalog
 ```
-opm index add -b quay.io/logging/cluster-logging-operator-bundle:5.6,quay.io/logging/elasticsearch-operator-bundle:5.6,quay.io/logging/loki-operator-bundle:5.6 -t quay.io/logging/logging-index:5.6 -c podman
-podman push quay.io/logging/logging-index:5.6
+opm index add -b quay.io/logging/cluster-logging-operator-bundle:${TAG},quay.io/logging/elasticsearch-operator-bundle:${TAG},quay.io/logging/loki-operator-bundle:${TAG} -t quay.io/logging/logging-index:${TAG} -c podman
+podman push quay.io/logging/logging-index:${TAG}
 ```
 
 ## File-based catalog
@@ -51,10 +52,10 @@ podman push quay.io/logging/logging-index:5.6
 ### Build from existing index
 ```
 mkdir catalog-test
-opm render quay.io/logging/logging-index:5.6 -o yaml > catalog-test/index.yaml
+opm render quay.io/logging/logging-index:${TAG} -o yaml > catalog-test/index.yaml
 opm generate dockerfile  catalog-test
-podman build . -f catalog-test.Dockerfile -t quay.io/logging/logging-index:5.6
-podman push quay.io/logging/logging-index:5.6
+podman build . -f catalog-test.Dockerfile -t quay.io/logging/logging-index:${TAG}
+podman push quay.io/logging/logging-index:${TAG}
 ```
 
 ### Build from bundles
@@ -66,33 +67,33 @@ touch logging-index/index.yaml
 opm init cluster-logging --default-channel=stable --output yaml >> logging-index/index.yaml
 echo "---
 entries:
-- name: cluster-logging.v5.6.0
-  skipRange: '>=4.6.0-0 <5.6.0'
+- name: cluster-logging.v5.8.0
+  skipRange: '>=4.6.0-0 <5.8.0'
 name: stable
 package: cluster-logging
 schema: olm.channel" >> logging-index/index.yaml
-opm render quay.io/logging/cluster-logging-operator-bundle:5.6 --output=yaml >> logging-index/index.yaml
+opm render quay.io/logging/cluster-logging-operator-bundle:${TAG} --output=yaml >> logging-index/index.yaml
 
 opm init elasticsearch-operator --default-channel=stable --output yaml >> logging-index/index.yaml
 echo "---
 entries:
-- name: elasticsearch-operator.v5.6.0
-  skipRange: '>=4.6.0-0 <5.6.0'
+- name: elasticsearch-operator.v5.8.0
+  skipRange: '>=4.6.0-0 <5.8.0'
 name: stable
 package: elasticsearch-operator
 schema: olm.channel" >> logging-index/index.yaml
-opm render quay.io/logging/elasticsearch-operator-bundle:5.6 --output=yaml >> logging-index/index.yaml
+opm render quay.io/logging/elasticsearch-operator-bundle:${TAG} --output=yaml >> logging-index/index.yaml
 
 opm init loki-operator --default-channel=stable --output yaml >> logging-index/index.yaml
 echo "---
 entries:
-- name: loki-operator.v5.6.0
-  skipRange: '>=5.4.0-0 <5.6.0'
+- name: loki-operator.v5.8.0
+  skipRange: '>=5.4.0-0 <5.8.0'
 name: stable
 package: loki-operator
 schema: olm.channel" >> logging-index/index.yaml
-opm render quay.io/logging/loki-operator-bundle:5.6 --output=yaml >> logging-index/index.yaml
+opm render quay.io/logging/loki-operator-bundle:${TAG} --output=yaml >> logging-index/index.yaml
 
 opm validate logging-index
-podman build . -f logging-index.Dockerfile -t quay.io/logging/logging-index:5.6
+podman build . -f logging-index.Dockerfile -t quay.io/logging/logging-index:${TAG}
 ```
