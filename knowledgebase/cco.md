@@ -99,7 +99,7 @@ spec:
 
 ## Create CredentialsRequest
 ```
-cat << EOF | oc create -f -
+cat << EOF >> cluster-logging-operator_01_cloudwatch_request_aws.yaml
 apiVersion: cloudcredential.openshift.io/v1
 kind: CredentialsRequest
 metadata:
@@ -125,7 +125,10 @@ spec:
   serviceAccountNames:
     - logcollector
 EOF
+
+oc create -f cluster-logging-operator_01_cloudwatch_request_aws.yaml
 ```
+Note: the CredentialsRequest yaml file must exist in the ${credentials-requests-dir}, otherwise running the ccoctl command won't get any files, and no roles can be created.
 
 ## Create Role in AWS
 ```
@@ -133,12 +136,12 @@ export OIDC_ENDPOINT=$(oc get authentication.config.openshift.io cluster -o json
 
 export AWS_ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
 
-export CLUSTER_NAME=$(oc get infrastructure cluster -o=jsonpath="{.status.infrastructureName}"  | sed 's/-[a-z0-9]\+$//')
+export CLUSTER_NAME=${OIDC_ENDPOINT%-oidc*}
 
 export REGION=$(oc get infrastructures.config.openshift.io cluster -ojsonpath={.status.platformStatus.aws.region})
 
 
-ccoctl aws create-iam-roles --name=${CLUSTER_NAME}-openshift-logging-cloudwatch-credentials --region=${REGION} --credentials-requests-dir=./ --identity-provider-arn=arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/${OIDC_ENDPOINT}
+ccoctl aws create-iam-roles --name=${CLUSTER_NAME} --region=${REGION} --credentials-requests-dir=./ --identity-provider-arn=arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/${OIDC_ENDPOINT}
 ```
 
 
