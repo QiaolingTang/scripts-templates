@@ -66,7 +66,7 @@ metadata:
   namespace: openshift-logging
 spec:
   managementState: Managed
-  size: 1x.extra-small
+  size: 1x.demo
   storage:
     secret:
       name: ${SECRETNAME}
