@@ -4,6 +4,7 @@ BUCKETNAME="logging-loki-qitang"
 SECRETNAME="logging-storage-secret"
 NAMESPACE="openshift-logging"
 STORAGECLASS=$(oc get sc -ojsonpath={.items[?(@.metadata.annotations.storageclass\\.kubernetes\\.io/is-default-class == \"true\")].metadata.name})
+LOKISTACK_NAME="logging-loki"
 ```
 
 # Create bucket
@@ -34,7 +35,7 @@ cat << EOF | oc apply -f -
 apiVersion: loki.grafana.com/v1
 kind: LokiStack
 metadata:
-  name: lokistack-sample
+  name: ${LOKISTACK_NAME}
   namespace: openshift-logging
 spec:
   managementState: Managed
@@ -62,7 +63,7 @@ cat << EOF | oc apply -f -
 apiVersion: loki.grafana.com/v1
 kind: LokiStack
 metadata:
-  name: lokistack-sample
+  name: ${LOKISTACK_NAME}
   namespace: openshift-logging
 spec:
   managementState: Managed
@@ -98,7 +99,7 @@ spec:
     type: vector
   logStore:
     lokistack:
-      name: lokistack-sample
+      name: ${LOKISTACK_NAME}
     type: lokistack
   managementState: Managed
   visualization:
@@ -118,7 +119,7 @@ spec:
     type: vector
   logStore:
     lokistack:
-      name: lokistack-sample
+      name: ${LOKISTACK_NAME}
     type: lokistack
   managementState: Managed
 EOF
