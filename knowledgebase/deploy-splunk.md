@@ -66,3 +66,9 @@ cat << EOF | oc create -f -
     serviceAccountName: clf-splunk
 EOF
 ```
+
+
+Refs:
+https://splunk.github.io/splunk-operator/OpenShift.html
+https://splunk.github.io/splunk-operator/
+https://github.com/splunk/splunk-operator
