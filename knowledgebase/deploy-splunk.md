@@ -69,6 +69,6 @@ EOF
 
 
 Refs:
-https://splunk.github.io/splunk-operator/OpenShift.html
-https://splunk.github.io/splunk-operator/
-https://github.com/splunk/splunk-operator
+- https://splunk.github.io/splunk-operator/OpenShift.html
+- https://splunk.github.io/splunk-operator/
+- https://github.com/splunk/splunk-operator
