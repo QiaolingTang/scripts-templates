@@ -35,7 +35,7 @@ Login to console with `admin:$password`
 
 ### Forward logs to splunk
 ```
-oc create secret generic clf-splunk-secret --from-file=hecToken=$(oc get secret splunk-single-standalone-secret-v1 -ojsonpath={.data.hec_token} | base64 -d)
+oc create secret generic clf-splunk-secret --from-literal=hecToken=$(oc get secret splunk-single-standalone-secret-v1 -ojsonpath={.data.hec_token} | base64 -d)
 oc create sa clf-splunk
 oc adm policy add-cluster-role-to-user collect-application-logs -z clf-splunk
 oc adm policy add-cluster-role-to-user collect-infrastructure-logs -z clf-splunk
