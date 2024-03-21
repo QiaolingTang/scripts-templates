@@ -2,7 +2,7 @@
 
 ## Configure the following environment variables
 ```
-export ROSA_CLUSTER_NAME=$(oc get infrastructure cluster -o=jsonpath="{.status.infrastructureName}"  | sed 's/-[a-z0-9]\+$//')
+export CLUSTER_NAME=$(oc get infrastructure cluster -o=jsonpath="{.status.infrastructureName}"  | sed 's/-[a-z0-9]\+$//')
 
 export REGION=$(oc get infrastructures.config.openshift.io cluster -ojsonpath={.status.platformStatus.aws.region})
 
@@ -12,17 +12,17 @@ export AWS_ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text
 
 export AWS_PAGER=""
 
-export SCRATCH="/tmp/${ROSA_CLUSTER_NAME}/clf-cloudwatch-sts"
+export SCRATCH="/tmp/${CLUSTER_NAME}/clf-cloudwatch-sts"
 
 mkdir -p ${SCRATCH}
 
-echo "Cluster: ${ROSA_CLUSTER_NAME}, Region: ${REGION}, OIDC Endpoint: ${OIDC_ENDPOINT}, AWS Account ID: ${AWS_ACCOUNT_ID}"
+echo "Cluster: ${CLUSTER_NAME}, Region: ${REGION}, OIDC Endpoint: ${OIDC_ENDPOINT}, AWS Account ID: ${AWS_ACCOUNT_ID}"
 ```
 
 ## Prepare AWS Account
 ### Create an IAM Policy
 ```
-POLICY_ARN=$(aws iam list-policies --query "Policies[?PolicyName=='RosaCloudWatch'].{ARN:Arn}" --output text)
+POLICY_ARN=$(aws iam list-policies --query "Policies[?PolicyName=='LoggingCloudWatch'].{ARN:Arn}" --output text)
 if [[ -z "${POLICY_ARN}" ]]; then
 cat << EOF > ${SCRATCH}/policy.json
 {
@@ -43,7 +43,7 @@ cat << EOF > ${SCRATCH}/policy.json
 ]
 }
 EOF
-POLICY_ARN=$(aws iam create-policy --policy-name "RosaCloudWatch" \
+POLICY_ARN=$(aws iam create-policy --policy-name "LoggingCloudWatch" \
 --policy-document file:///${SCRATCH}/policy.json --query Policy.Arn --output text)
 fi
 echo ${POLICY_ARN}
@@ -68,7 +68,7 @@ cat <<EOF > ${SCRATCH}/trust-policy.json
    }]
 }
 EOF
-ROLE_ARN=$(aws iam create-role --role-name "${ROSA_CLUSTER_NAME}-RosaCloudWatch" \
+ROLE_ARN=$(aws iam create-role --role-name "${CLUSTER_NAME}-LoggingCloudWatch" \
    --assume-role-policy-document file://${SCRATCH}/trust-policy.json \
    --query Role.Arn --output text)
 echo ${ROLE_ARN}
@@ -76,7 +76,7 @@ echo ${ROLE_ARN}
 
 ### Attach the IAM Policy to the IAM Role
 ```
-aws iam attach-role-policy --role-name "${ROSA_CLUSTER_NAME}-RosaCloudWatch" \
+aws iam attach-role-policy --role-name "${CLUSTER_NAME}-LoggingCloudWatch" \
 --policy-arn ${POLICY_ARN}
 ```
 
@@ -91,6 +91,14 @@ metadata:
 stringData:
   role_arn: $ROLE_ARN
 EOF
+```
+
+
+# Cleanup Resources
+```
+aws iam detach-role-policy --role-name "${CLUSTER_NAME}-LoggingCloudWatch" --policy-arn "${POLICY_ARN}"
+aws iam delete-role --role-name "${CLUSTER_NAME}-LoggingCloudWatch"
+aws iam delete-policy --policy-arn "${POLICY_ARN}"
 ```
 
 Ref: https://mobb.ninja/docs/rosa/clf-cloudwatch-sts/
