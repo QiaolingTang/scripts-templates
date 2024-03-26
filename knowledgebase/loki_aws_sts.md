@@ -99,6 +99,27 @@ spec:
 EOF
 ```
 
+# Create clusterlogging
+```
+cat << EOF | oc create -f -
+apiVersion: logging.openshift.io/v1
+kind: ClusterLogging
+metadata:
+  name: instance
+  namespace: openshift-logging
+spec:
+  collection:
+    type: vector
+  logStore:
+    lokistack:
+      name: ${lokistack_name}
+    type: lokistack
+  managementState: Managed
+  visualization:
+    type: ocp-console
+EOF
+```
+
 # Cleanup Resources
 ```
 aws iam detach-role-policy --role-name "${role_name}" --policy-arn "arn:aws:iam::aws:policy/AmazonS3FullAccess"
