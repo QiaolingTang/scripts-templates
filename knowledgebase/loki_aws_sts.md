@@ -1,59 +1,103 @@
-# Preparing file
+## Configure the following environment variables
 ```
-cluster_name=$(oc get infrastructures.config.openshift.io cluster -ojsonpath={.status.infrastructureName})
-lokistack_name="logging-loki-$cluster_name"
-oidc_provider=$(oc get authentication cluster -o json | jq -r '.spec.serviceAccountIssuer' | sed 's~http[s]*://~~g')
-lokistack_ns="openshift-logging"
+export CLUSTER_NAME=$(oc get infrastructure cluster -o=jsonpath="{.status.infrastructureName}"  | sed 's/-[a-z0-9]\+$//')
 
-aws_account_id=$(aws sts get-caller-identity --query 'Account' --output text)
-region=$(oc get infrastructures.config.openshift.io cluster -ojsonpath={.status.platformStatus.aws.region})
-cluster_id=$(oc get clusterversion -o jsonpath='{.items[].spec.clusterID}{"\n"}')
+export LOKISTACK_NAME="logging-loki-${CLUSTER_NAME}"
 
-trust_rel_file="/tmp/$cluster_id-trust.json"
-role_name="$lokistack_ns-$lokistack_name"
+export LOKISTACK_NS="openshift-logging"
 
-cat > "$trust_rel_file" <<EOF
+export REGION=$(oc get infrastructures.config.openshift.io cluster -ojsonpath={.status.platformStatus.aws.region})
+
+export OIDC_ENDPOINT=$(oc get authentication.config.openshift.io cluster -o json | jq -r .spec.serviceAccountIssuer | sed  's|^https://||')
+
+export AWS_ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
+
+export SCRATCH="/tmp/${CLUSTER_NAME}/lokistack-sts"
+
+mkdir -p ${SCRATCH}
+
+echo "Cluster: ${CLUSTER_NAME}, Region: ${REGION}, OIDC Endpoint: ${OIDC_ENDPOINT}, AWS Account ID: ${AWS_ACCOUNT_ID}"
+```
+
+## Prepare AWS Account
+### Create an IAM Policy
+```
+POLICY_ARN=$(aws iam list-policies --query "Policies[?PolicyName=='LoggingLokiS3Bucket'].{ARN:Arn}" --output text)
+if [[ -z "${POLICY_ARN}" ]]; then
+cat << EOF > ${SCRATCH}/policy.json
 {
- "Version": "2012-10-17",
- "Statement": [
-   {
-     "Effect": "Allow",
-     "Principal": {
-       "Federated": "arn:aws:iam::${aws_account_id}:oidc-provider/${oidc_provider}"
-     },
-     "Action": "sts:AssumeRoleWithWebIdentity",
-     "Condition": {
-       "StringEquals": {
-         "${oidc_provider}:sub": [
-           "system:serviceaccount:${lokistack_ns}:${lokistack_name}",
-           "system:serviceaccount:${lokistack_ns}:${lokistack_name}-ruler"
-         ]
-       }
-     }
-   }
- ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:CreateBucket",
+        "s3:DeleteBucket",
+        "s3:PutBucketTagging",
+        "s3:GetBucketTagging",
+        "s3:PutBucketPublicAccessBlock",
+        "s3:GetBucketPublicAccessBlock",
+        "s3:PutEncryptionConfiguration",
+        "s3:GetEncryptionConfiguration",
+        "s3:PutLifecycleConfiguration",
+        "s3:GetLifecycleConfiguration",
+        "s3:GetBucketLocation",
+        "s3:ListBucket",
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:ListBucketMultipartUploads",
+        "s3:AbortMultipartUpload",
+        "s3:ListMultipartUploadParts"
+      ],
+      "Resource": "arn:aws:s3:*:*:*"
+    }
+  ]
 }
 EOF
+POLICY_ARN=$(aws iam create-policy --policy-name "LoggingLokiS3Bucket" \
+--policy-document file:///${SCRATCH}/policy.json --query Policy.Arn --output text)
+fi
+echo ${POLICY_ARN}
 ```
 
-# Creating IAM role
+### Create an IAM Role trust policy
 ```
-role_arn=$(aws iam create-role \
-             --role-name "$role_name" \
-             --assume-role-policy-document "file://$trust_rel_file" \
-             --query Role.Arn \
-             --output text)
-echo $role_arn
+cat <<EOF > ${SCRATCH}/trust-policy.json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/${OIDC_ENDPOINT}"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "${OIDC_ENDPOINT}:sub": [
+            "system:serviceaccount:${LOKISTACK_NS}:${LOKISTACK_NAME}",
+            "system:serviceaccount:${LOKISTACK_NS}:${LOKISTACK_NAME}-ruler"
+          ]
+        }
+      }
+    }
+  ]
+}
+EOF
+ROLE_ARN=$(aws iam create-role --role-name "${CLUSTER_NAME}-LoggingLokiS3Bucket" \
+   --assume-role-policy-document file://${SCRATCH}/trust-policy.json \
+   --query Role.Arn --output text)
+echo ${ROLE_ARN}
 ```
 
-# Attaching role policy 'AmazonS3FullAccess' to role
+### Attach the IAM Policy to the IAM Role
 ```
-aws iam attach-role-policy \
-  --role-name "$role_name" \
-  --policy-arn "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+aws iam attach-role-policy --role-name "${CLUSTER_NAME}-LoggingLokiS3Bucket" \
+--policy-arn ${POLICY_ARN}
 ```
 
-# Create Bucket
+## Create Bucket
 ```
 BUCKETNAME="logging-loki-qitang"
 SECRETNAME="logging-storage-secret"
@@ -62,11 +106,11 @@ STORAGECLASS=$(oc get sc -ojsonpath={.items[?(@.metadata.annotations.storageclas
 aws s3api create-bucket --bucket ${BUCKETNAME} --region us-east-2 --create-bucket-configuration LocationConstraint=us-east-2
 ```
 
-# Create Secret
+## Create Secret for LokiStack
 ```
 oc -n ${lokistack_ns} create secret generic ${SECRETNAME} \
   --from-literal=bucketnames="${BUCKETNAME}" \
-  --from-literal=role_arn="${role_arn}" \
+  --from-literal=role_arn="${ROLE_ARN}" \
   --from-literal=region="us-east-2"
 ```
 
@@ -76,7 +120,7 @@ cat << EOF | oc apply -f -
 apiVersion: loki.grafana.com/v1
 kind: LokiStack
 metadata:
-  name: ${lokistack_name}
+  name: ${LOKISTACK_NAME}
   namespace: openshift-logging
 spec:
   managementState: Managed
@@ -112,7 +156,7 @@ spec:
     type: vector
   logStore:
     lokistack:
-      name: ${lokistack_name}
+      name: ${LOKISTACK_NAME}
     type: lokistack
   managementState: Managed
   visualization:
@@ -122,6 +166,7 @@ EOF
 
 # Cleanup Resources
 ```
-aws iam detach-role-policy --role-name "${role_name}" --policy-arn "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-aws iam delete-role --role-name "${role_name}"
+aws iam detach-role-policy --role-name "${CLUSTER_NAME}-LoggingLokiS3Bucket" --policy-arn "${POLICY_ARN}"
+aws iam delete-role --role-name "${CLUSTER_NAME}-LoggingLokiS3Bucket"
+aws iam delete-policy --policy-arn "${POLICY_ARN}"
 ```

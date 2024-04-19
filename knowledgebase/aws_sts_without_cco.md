@@ -10,8 +10,6 @@ export OIDC_ENDPOINT=$(oc get authentication.config.openshift.io cluster -o json
 
 export AWS_ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
 
-export AWS_PAGER=""
-
 export SCRATCH="/tmp/${CLUSTER_NAME}/clf-cloudwatch-sts"
 
 mkdir -p ${SCRATCH}
@@ -26,21 +24,21 @@ POLICY_ARN=$(aws iam list-policies --query "Policies[?PolicyName=='LoggingCloudW
 if [[ -z "${POLICY_ARN}" ]]; then
 cat << EOF > ${SCRATCH}/policy.json
 {
-"Version": "2012-10-17",
-"Statement": [
-   {
-         "Effect": "Allow",
-         "Action": [
-            "logs:CreateLogGroup",
-            "logs:CreateLogStream",
-            "logs:DescribeLogGroups",
-            "logs:DescribeLogStreams",
-            "logs:PutLogEvents",
-            "logs:PutRetentionPolicy"
-         ],
-         "Resource": "arn:aws:logs:*:*:*"
-   }
-]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:PutLogEvents",
+        "logs:PutRetentionPolicy"
+      ],
+      "Resource": "arn:aws:logs:*:*:*"
+    }
+  ]
 }
 EOF
 POLICY_ARN=$(aws iam create-policy --policy-name "LoggingCloudWatch" \
@@ -90,6 +88,35 @@ metadata:
   namespace: openshift-logging
 stringData:
   role_arn: $ROLE_ARN
+EOF
+```
+
+## Create CLF
+```
+cat << EOF | oc apply -f -
+  apiVersion: "logging.openshift.io/v1"
+  kind: ClusterLogForwarder
+  metadata:
+    name: instance
+    namespace: openshift-logging
+  spec:
+    outputs:
+      - name: cw
+        type: cloudwatch
+        cloudwatch:
+          groupBy: namespaceName
+          groupPrefix: ${CLUSTER_NAME}
+          region: ${REGION}
+        secret:
+          name: cloudwatch-credentials
+    pipelines:
+      - name: to-cloudwatch
+        inputRefs:
+          - infrastructure
+          - audit
+          - application
+        outputRefs:
+          - cw
 EOF
 ```
 
