@@ -9,7 +9,6 @@
 ```
 git clone git@github.com:grafana/loki.git
 git clone git@github.com:openshift/cluster-logging-operator.git
-git clone git@github.com:openshift/elasticsearch-operator.git
 ```
 
 2. Copy manifests to a directory
@@ -17,16 +16,13 @@ git clone git@github.com:openshift/elasticsearch-operator.git
 mkdir bundles
 cp -r loki/operator/bundle/manifests loki-operator
 cp -r cluster-logging-operator/bundle/manifests cluster-logging
-cp -r elasticsearch-operator/bundle/manifests elasticsearch-operator
 ```
 
 3. Modify manifests if needed, for loki, the CSV version is v0.0.1, if you want to do upgrade test, you have to change it to v5.x
 
 4. Build bundle image
 ```
-export TAG="5.8"
-opm alpha bundle build -b podman -c stable -e stable -d ./elasticsearch-operator/ -p elasticsearch-operator -t quay.io/logging/elasticsearch-operator-bundle:${TAG} --overwrite
-podman push quay.io/logging/elasticsearch-operator-bundle:${TAG}
+export TAG="6.0"
 
 opm alpha bundle build -b podman -c stable -e stable -d ./cluster-logging/ -p cluster-logging -t quay.io/logging/cluster-logging-operator-bundle:${TAG} --overwrite
 podman push quay.io/logging/cluster-logging-operator-bundle:${TAG}
@@ -43,7 +39,8 @@ We have 2 types of catalogs: file-based catalog and SQLite-based catalog.  Start
 
 ## SQLite-based catalog
 ```
-opm index add -b quay.io/logging/cluster-logging-operator-bundle:${TAG},quay.io/logging/elasticsearch-operator-bundle:${TAG},quay.io/logging/loki-operator-bundle:${TAG} -t quay.io/logging/logging-index:${TAG} -c podman
+opm index add -b quay.io/logging/cluster-logging-operator-bundle:${TAG},quay.io/logging/loki-operator-bundle:${TAG} -t quay.io/logging/logging-index:${TAG} -c podman
+
 podman push quay.io/logging/logging-index:${TAG}
 ```
 
@@ -67,28 +64,18 @@ touch logging-index/index.yaml
 opm init cluster-logging --default-channel=stable --output yaml >> logging-index/index.yaml
 echo "---
 entries:
-- name: cluster-logging.v5.8.0
-  skipRange: '>=4.6.0-0 <5.8.0'
+- name: cluster-logging.v6.0.0
+  skipRange: '>=5.8.0-0 <6.0.0'
 name: stable
 package: cluster-logging
 schema: olm.channel" >> logging-index/index.yaml
 opm render quay.io/logging/cluster-logging-operator-bundle:${TAG} --output=yaml >> logging-index/index.yaml
 
-opm init elasticsearch-operator --default-channel=stable --output yaml >> logging-index/index.yaml
-echo "---
-entries:
-- name: elasticsearch-operator.v5.8.0
-  skipRange: '>=4.6.0-0 <5.8.0'
-name: stable
-package: elasticsearch-operator
-schema: olm.channel" >> logging-index/index.yaml
-opm render quay.io/logging/elasticsearch-operator-bundle:${TAG} --output=yaml >> logging-index/index.yaml
-
 opm init loki-operator --default-channel=stable --output yaml >> logging-index/index.yaml
 echo "---
 entries:
-- name: loki-operator.v5.8.0
-  skipRange: '>=5.4.0-0 <5.8.0'
+- name: loki-operator.v6.0.0
+  skipRange: '>=5.8.0-0 <6.0.0'
 name: stable
 package: loki-operator
 schema: olm.channel" >> logging-index/index.yaml
