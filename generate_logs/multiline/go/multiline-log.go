@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"time"
 )
@@ -556,6 +557,7 @@ func main() {
 
 	logType := flag.String("log-type", "java", "type of programming language used to generate multiline logs, such as java, python")
 	rate := flag.Float64("rate", 30.00, "number of logs to generate per minute, 0 is infinite")
+	stream := flag.String("stream", "stderr", "print the error message to the stream, such as stdout, stderr")
 
 	flag.Parse()
 	switch *logType {
@@ -649,9 +651,25 @@ func main() {
 		sleepTime = 60.00 / *rate
 	}
 
+	var outStream io.Writer
+	switch *stream {
+	case "stdout":
+		{
+			outStream = os.Stdout
+		}
+	case "stderr":
+		{
+			outStream = os.Stderr
+		}
+	default:
+		{
+			outStream = os.Stderr
+		}
+	}
+
 	for true {
 		for i := 0; i < len(newLogs); i++ {
-			fmt.Fprint(os.Stderr, newLogs[i])
+			fmt.Fprint(outStream, newLogs[i])
 			delay(sleepTime)
 		}
 	}

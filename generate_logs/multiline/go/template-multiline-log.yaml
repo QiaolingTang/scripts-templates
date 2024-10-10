@@ -25,7 +25,7 @@ objects:
       metadata:
         annotations:
           capabilities: Seamless Upgrades
-          containerImage: quay.io/qiaolingtang/multiline:v0.17
+          containerImage: quay.io/qiaolingtang/multiline:v0.19
           support: Qiaoling Tang
         labels:
           name: ${NAME}
@@ -35,7 +35,7 @@ objects:
           - /run-go.sh
           command:
           - /bin/sh
-          image: quay.io/qiaolingtang/multiline:v0.17
+          image: quay.io/qiaolingtang/multiline:v0.19
           imagePullPolicy: IfNotPresent
           name: multiline-log
           resources: {}
@@ -60,7 +60,7 @@ objects:
 - apiVersion: v1
   data:
     multiline-log.cfg: |
-      --rate ${RATE} --log-type ${LOG_TYPE}
+      --stream ${OUT_STREAM} --rate ${RATE} --log-type ${LOG_TYPE}
   kind: ConfigMap
   metadata:
     name: ${NAME}
@@ -71,3 +71,5 @@ parameters:
   value: "all"
 - name: RATE
   value: "30.00"
+- name: OUT_STREAM
+  value: "stdout"

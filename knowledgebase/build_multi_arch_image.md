@@ -1,3 +1,17 @@
+## Podman
+```
+podman manifest create <image name>
+
+
+podman build --platform linux/ppc64le,linux/arm64,linux/amd64,linux/s390x  --manifest <image name>  .
+
+
+podman manifest push <image name>
+```
+
+
+
+## Docker
 ### Install docker
 ```
 sudo dnf -y install dnf-plugins-core
