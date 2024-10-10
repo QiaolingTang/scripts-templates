@@ -7,9 +7,6 @@ RUN go build /multiline-log.go && mkdir -p /var/lib/logging/ && chmod +x ./multi
 COPY multiline-log.cfg /var/lib/logging/
 WORKDIR /
 
-
-WORKDIR /
-
 FROM fedora:latest
 
 COPY --from=builder /multiline-log /
