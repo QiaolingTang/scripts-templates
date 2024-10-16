@@ -113,3 +113,29 @@
 
 # read
 `:r`+$filename read $filename into current file
+
+
+# open file
+`gf`/`gF` go to file, e.g.:
+
+1. open a file in vim with below content:
+```
+FROM fedora:latest as builder
+
+RUN sudo yum install -y go
+
+COPY multiline-log.go run-go.sh /
+RUN go build /multiline-log.go && mkdir -p /var/lib/logging/ && chmod +x ./multiline-log
+COPY multiline-log.cfg /var/lib/logging/
+WORKDIR /
+```
+2. move cursor to `run-go.sh`
+3. press `g`+`f`/`F`
+
+
+# run external command in vim
+`:!`+cmd
+
+`:%! jq .` run `jq` command in current file, `%` means current file
+
+`:r !`+cmd read the output of cmd and put it into current file
