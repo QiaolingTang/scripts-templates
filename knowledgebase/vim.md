@@ -139,3 +139,9 @@ WORKDIR /
 `:%! jq .` run `jq` command in current file, `%` means current file
 
 `:r !`+cmd read the output of cmd and put it into current file
+
+
+# useful links
+- https://vimgolf.com/
+- https://vim-adventures.com/
+- https://vim.rtorr.com/
