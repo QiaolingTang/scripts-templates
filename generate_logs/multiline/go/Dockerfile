@@ -15,3 +15,6 @@ COPY multiline-log.cfg /var/lib/logging/
 COPY run-go.sh /
 
 WORKDIR /
+
+LABEL Author="Qiaoling Tang" \
+    E-mail="qitang@redhat.com"
