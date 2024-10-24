@@ -80,15 +80,21 @@
 
 
 # mode
-`shift v` visual line
+- `shift v` visual line
 
-`ctrl v` visual block
+- `ctrl v` visual block
 
 
 # registers
 `"`+ a-zA-Z, e.g.:
 - `"a yy` yank the line to the register a
 - `"a p` paste from register a
+
+
+# change until character
+- `cf`+character `f` won't highlight the searched character.
+
+- `ct`+character the character is not included.
 
 
 # change block:

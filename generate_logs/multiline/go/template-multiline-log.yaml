@@ -26,7 +26,6 @@ objects:
         annotations:
           capabilities: Seamless Upgrades
           containerImage: quay.io/qiaolingtang/multiline:v0.19
-          support: Qiaoling Tang
         labels:
           name: ${NAME}
       spec:
